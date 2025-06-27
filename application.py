@@ -590,3 +590,19 @@ def init_db():
         name TEXT NOT NULL,
         user_id INTEGER NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS files (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        path TEXT NOT NULL,
+        size INTEGER,
+        folder_id INTEGER,
+        user_id INTEGER NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS reminders (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        due_date TEXT NOT NULL,
+        is_paid INTEGER DEFAULT 0,
+        file_id INTEGER,
+        user_id INTEGER NOT NULL
+    );
