@@ -317,6 +317,9 @@ def dashboard():
                            reminders=reminders,
                            notifications=notifications,
                            notif_count=notif_count)
+@app.route('/')
+def home():
+    return "App is running with scheduled reminder sender!"
 @app.before_request
 def load_profile_picture():
     user_id = session.get('user_id')
