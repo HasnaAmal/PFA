@@ -282,6 +282,8 @@ def dashboard():
                            reminders=reminders,
                            notifications=notifications,
                            notif_count=notif_count)
+def generate_token(user_id, new_email):
+    return serializer.dumps([user_id, new_email], salt='email-change-salt')
 def confirm_token(token, expiration=3600):
     try:
         user_id, new_email = serializer.loads(token, salt='email-change-salt', max_age=expiration)
