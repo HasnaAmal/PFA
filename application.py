@@ -318,3 +318,9 @@ def upload():
     if file.filename == '':
         flash('Nom de fichier invalide.', 'error')
         return redirect(url_for('files'))
+    original_filename = secure_filename(file.filename)
+    ext = os.path.splitext(original_filename)[1].lower()
+
+    # توليد اسم فريد لتفادي تعارض الملفات
+    unique_filename = f"{uuid.uuid4().hex}{ext}"
+    path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
