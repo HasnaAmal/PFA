@@ -117,6 +117,10 @@ def register():
     fullname = request.form['fullname']
     email = request.form['email']
     password = request.form['password']
+    # 🔐 Validation du mot de passe
+    if not re.match(r'^(?=.*[A-Z])(?=.*\d).{8,}$', password):
+        flash("Le mot de passe doit contenir au moins 8 caractères, une majuscule et un chiffre.", "error")
+        return redirect('/')
     hashed = generate_password_hash(password)
 
     conn = get_db()
