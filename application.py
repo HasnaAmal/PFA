@@ -448,6 +448,17 @@ def delete_account():
     session.clear()
     flash("Votre compte a été supprimé avec succès.", "success")
     return redirect(url_for('index'))
+@app.template_filter('datetimeformat')
+def datetimeformat(value, format='%d/%m/%Y %H:%M'):
+    if value is None:
+        return ""
+    # value ممكن يكون نص، أو datetime object
+    if isinstance(value, str):
+        try:
+            value = datetime.fromisoformat(value)
+        except ValueError:
+            return value  # إذا ما قدرناش نحوله، نرجع النص كما هو
+    return value.strftime(format)
 from PIL import Image, ImageEnhance, ImageFilter
 import pytesseract
 import os
