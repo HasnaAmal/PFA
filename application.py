@@ -425,6 +425,29 @@ def account():
     notif_count = db.execute('SELECT COUNT(*) FROM notifications WHERE user_id = ?', (user_id,)).fetchone()[0]
 
     return render_template('account.html', notifications=notifications, notif_count=notif_count)
+@app.route('/delete_account', methods=['POST'])
+def delete_account():
+    user_id = session.get('user_id')
+    if not user_id:
+        flash("Vous devez être connecté pour supprimer votre compte.", "error")
+        return redirect(url_for('login'))
+
+    confirm_password = request.form.get('confirm_password')
+    db = get_db()
+    user = db.execute('SELECT * FROM users WHERE id = ?', (user_id,)).fetchone()
+
+    if not user or not check_password_hash(user['password'], confirm_password):
+        flash("Mot de passe incorrect. Suppression annulée.", "error")
+        return redirect(url_for('account'))
+
+    # Suppression
+    db.execute('DELETE FROM users WHERE id = ?', (user_id,))
+    db.execute('DELETE FROM notifications WHERE user_id = ?', (user_id,))
+    db.commit()
+
+    session.clear()
+    flash("Votre compte a été supprimé avec succès.", "success")
+    return redirect(url_for('index'))
 from PIL import Image, ImageEnhance, ImageFilter
 import pytesseract
 import os
