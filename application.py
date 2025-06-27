@@ -192,3 +192,21 @@ def logout():
     flash("Déconnecté.", "info")
     return redirect('/')
 
+@app.route('/forgot', methods=['GET', 'POST'])
+def forgot():
+    if request.method == 'POST':
+        email = request.form['email']
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute("SELECT id FROM users WHERE email=?", (email,))
+        user = cur.fetchone()
+        if user:
+            token = str(uuid.uuid4())
+            cur.execute("DELETE FROM password_reset WHERE user_id=?", (user['id'],))
+            cur.execute("INSERT INTO password_reset (user_id, token) VALUES (?, ?)", (user['id'], token))
+            conn.commit()
+            send_password_reset_email(email, token)
+        flash("Si cet email existe, un lien a été envoyé.", "info")
+        conn.close()
+        return redirect('/')
+    return render_template('forgot.html')
