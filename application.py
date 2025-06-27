@@ -29,3 +29,20 @@ def get_db():
     conn = sqlite3.connect('app.db')
     conn.row_factory = sqlite3.Row
     return conn    
+from flask_apscheduler import APScheduler
+
+scheduler = APScheduler()
+
+@scheduler.task('interval', id='send_reminders_job', minutes=1)
+def scheduled_send_reminders():
+    with app.app_context():
+        send_due_reminders()
+
+from apscheduler.schedulers.background import BackgroundScheduler
+scheduler = BackgroundScheduler()
+def scheduled_send_reminders():
+    print("Envoi automatique des rappels...")
+    send_due_reminders()
+
+scheduler.add_job(scheduled_send_reminders, 'interval', minutes=5)
+scheduler.start()
