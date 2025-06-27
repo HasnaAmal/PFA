@@ -48,6 +48,9 @@
     </aside>
     <!-- Main Content -->
     <main class="dashboard-main" id="main">
+        <!-------------------------------------------------------------------------------->
+        <input type="checkbox" title="Dark mode" id="checkMe">
+        <!--------------------------------------------------------------------------------->
         <!-- Welcome Section -->
         <section class="welcome-section fade-in">
             <div class="welcome-card">
@@ -199,6 +202,7 @@
     {% endfor %}
     {% endif %}
     {% endwith %}
+    <script src="{{ url_for('static', filename='js/FolderDarkMode.js') }}"></script>
     <script>
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
