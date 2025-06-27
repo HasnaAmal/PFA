@@ -345,3 +345,21 @@ def upload():
     if not category:
         category = 'non_catégorisé'
     category_norm = normalize(category)
+    db = get_db()
+    folders = db.execute("SELECT id, name FROM folders WHERE user_id = ?", (session['user_id'],)).fetchall()
+
+    folder_id = None
+    for folder in folders:
+        folder_name_norm = normalize(folder['name'])
+        if folder_name_norm == category_norm:
+            folder_id = folder['id']
+            category = folder['name']
+            break
+
+    if folder_id is None:
+        cursor = db.execute(
+            "INSERT INTO folders (name, user_id) VALUES (?, ?)",
+            (category, session['user_id'])
+        )
+        db.commit()
+        folder_id = cursor.lastrowid
