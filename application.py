@@ -669,6 +669,105 @@ def upload():
 
     flash(f'Fichier uploadé avec succès. Catégorie détectée : {category}', 'success')
     return redirect(url_for('folders'))
+@app.route('/files')
+def files():
+    if 'user_id' not in session:
+        return redirect(url_for('index'))
+    db = get_db()
+    user_id = session['user_id']
+    files = db.execute('''
+        SELECT f.*, fo.name AS folder_name FROM files f
+        LEFT JOIN folders fo ON f.folder_id = fo.id
+        WHERE f.user_id = ?
+        ORDER BY f.created_at DESC
+    ''', (user_id,)).fetchall()
+    
+    folders = db.execute("SELECT * FROM folders WHERE user_id = ?", (user_id,)).fetchall()
+    notifications = db.execute('''
+        SELECT * FROM notifications
+        WHERE user_id = ?
+        ORDER BY id DESC
+        LIMIT 10
+    ''', (user_id,)).fetchall()
+
+    notif_count = db.execute("SELECT COUNT(*) FROM notifications WHERE user_id = ?", (user_id,)).fetchone()[0]
+    return render_template('folder.html', files=files, folders=folders,notifications=notifications,
+                           notif_count=notif_count)
+                           
+@app.route('/folder')
+def folders():
+    if 'user_id' not in session:
+        return redirect(url_for('index'))
+
+    db = get_db()
+    user_id = session['user_id']
+
+    # Notifications
+    notifications = db.execute('''
+        SELECT * FROM notifications
+        WHERE user_id = ?
+        ORDER BY id DESC
+        LIMIT 10
+    ''', (user_id,)).fetchall()
+
+    notif_count = db.execute("SELECT COUNT(*) FROM notifications WHERE user_id = ?", (user_id,)).fetchone()[0]
+
+    # Dossiers + nombre de fichiers dans chaque dossier
+    folders = db.execute('''
+        SELECT folders.*, COUNT(files.id) AS file_count
+        FROM folders
+        LEFT JOIN files ON folders.id = files.folder_id
+        WHERE folders.user_id = ?
+        GROUP BY folders.id
+    ''', (user_id,)).fetchall()
+
+    return render_template('folder.html',
+                           folders=folders,
+                           notifications=notifications,
+                           notif_count=notif_count)
+
+@app.route('/add_folder', methods=['POST'])
+def add_folder():
+    if 'user_id' not in session:
+        return redirect(url_for('index'))
+
+    folder_name = request.form.get('folder_name')
+    if not folder_name:
+        flash("Le nom du dossier est requis.", "error")
+        return redirect(url_for('folders'))
+
+    db = get_db()
+    db.execute("INSERT INTO folders (name, user_id) VALUES (?, ?)", (folder_name, session['user_id']))
+    db.commit()
+    # بعد db.commit()
+    folder_id = db.execute("SELECT last_insert_rowid()").fetchone()[0]
+    add_notification(db, session['user_id'], f'📂 Nouveau dossier "{folder_name}" créé.', 'folder', folder_id)
+    db.commit()
+
+    flash("Dossier ajouté avec succès.", "success")
+    return redirect(url_for('folders'))
+
+@app.route('/delete_folder/<int:folder_id>', methods=['POST'])
+def delete_folder(folder_id):
+    if 'user_id' not in session:
+        return redirect(url_for('index'))
+
+    db = get_db()
+
+    folder = db.execute("SELECT * FROM folders WHERE id = ? AND user_id = ?", (folder_id, session['user_id'])).fetchone()
+    if folder is None:
+        flash("Accès refusé ou dossier introuvable.", "error")
+        return redirect(url_for('folders'))
+
+    db.execute("DELETE FROM files WHERE folder_id = ? AND user_id = ?", (folder_id, session['user_id']))
+    
+    # امسح dossier
+    db.execute("DELETE FROM folders WHERE id = ?", (folder_id,))
+    db.commit()
+
+    flash("Dossier supprimé avec succès.", "success")
+    return redirect(url_for('folders'))
+
 @app.route('/reminders')
 def reminders():
     if 'user_id' not in session:
