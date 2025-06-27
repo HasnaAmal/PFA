@@ -193,7 +193,7 @@ def login():
 @app.route('/logout')
 def logout():
     session.clear()
-    flash("Déconnecté.", "info")
+    flash("Déconnecté.", "success")
     return redirect('/')
 
 @app.route('/forgot', methods=['GET', 'POST'])
@@ -210,7 +210,7 @@ def forgot():
             cur.execute("INSERT INTO password_reset (user_id, token) VALUES (?, ?)", (user['id'], token))
             conn.commit()
             send_password_reset_email(email, token)
-        flash("Si cet email existe, un lien a été envoyé.", "info")
+        flash("Un lien a été envoyé.", "success")
         conn.close()
         return redirect('/')
     return render_template('forgot.html')
