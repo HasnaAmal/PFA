@@ -502,3 +502,56 @@ scheduler.start()
 
 import atexit
 atexit.register(lambda: scheduler.shutdown())
+@app.route('/edit_reminder/<int:reminder_id>', methods=['POST'])
+def edit_reminder(reminder_id):
+    if 'user_id' not in session:
+        return redirect(url_for('index'))
+
+    title = request.form.get('title', '').strip()
+    date_part = request.form.get('due_date', '').strip()
+    time_part = request.form.get('due_time', '00:00').strip()
+    description = request.form.get('description', '').strip()
+
+    if not title or not date_part:
+        flash('Tous les champs sont obligatoires.', 'error')
+        return redirect(url_for('reminders'))
+
+    try:
+        full_datetime_str = f"{date_part} {time_part}:00"
+        due_date = datetime.strptime(full_datetime_str, '%Y-%m-%d %H:%M:%S')
+    except ValueError:
+        flash("Format de date ou d'heure invalide.", "error")
+        return redirect(url_for('reminders'))
+
+    db = get_db()
+    reminder = db.execute('SELECT * FROM reminders WHERE id = ? AND user_id = ?', (reminder_id, session['user_id'])).fetchone()
+    if not reminder:
+        flash("Rappel introuvable ou accès refusé.", "error")
+        return redirect(url_for('reminders'))
+
+    db.execute('''
+        UPDATE reminders
+        SET title = ?, due_date = ?, description = ?
+        WHERE id = ?
+    ''', (title, due_date.strftime('%Y-%m-%d %H:%M:%S'), description, reminder_id))
+    db.commit()
+
+    flash("Rappel modifié avec succès.", "success")
+    return redirect(url_for('reminders'))
+
+@app.route('/delete_reminder/<int:reminder_id>', methods=['POST'])
+def delete_reminder(reminder_id):
+    if 'user_id' not in session:
+        return redirect(url_for('index'))
+
+    db = get_db()
+    reminder = db.execute('SELECT * FROM reminders WHERE id=? AND user_id=?', (reminder_id, session['user_id'])).fetchone()
+
+    if not reminder:
+        flash("Rappel introuvable ou accès refusé.", "error")
+        return redirect(url_for('reminders'))
+
+    db.execute('DELETE FROM reminders WHERE id=? AND user_id=?', (reminder_id, session['user_id']))
+    db.commit()
+    flash("Rappel supprimé avec succès.", "success")
+    return redirect(url_for('reminders'))
