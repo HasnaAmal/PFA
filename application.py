@@ -241,3 +241,16 @@ def reset_password():
         flash("Lien invalide ou expiré.", "error")
         conn.close()
         return redirect('/')
+from PIL import Image, ImageEnhance, ImageFilter
+import pytesseract
+import os
+import fitz  # PyMuPDF
+from werkzeug.utils import secure_filename
+from io import BytesIO
+
+basedir = os.path.abspath(os.path.dirname(__file__))
+UPLOAD_FOLDER = os.path.join(basedir, 'static', 'uploads')
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
