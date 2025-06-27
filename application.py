@@ -17,3 +17,6 @@ from dotenv import load_dotenv
 load_dotenv()
 os.environ['TESSDATA_PREFIX'] = r'C:\Program Files\Tesseract-OCR\tessdata'
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+app = Flask(__name__)
+app.secret_key = 'secret_key_tres_forte'
+app.permanent_session_lifetime = timedelta(days=30)
