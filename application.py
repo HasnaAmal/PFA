@@ -151,3 +151,19 @@ def register():
     send_verification_email(email, token)
     flash("Inscription réussie ! Vérifiez votre email.", "success")
     return redirect('/')
+@app.route('/verify-email')
+def verify_email():
+    token = request.args.get('token')
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT user_id FROM email_verification WHERE token=?", (token,))
+    row = cur.fetchone()
+    if row:
+        cur.execute("UPDATE users SET is_verified=1 WHERE id=?", (row['user_id'],))
+        cur.execute("DELETE FROM email_verification WHERE user_id=?", (row['user_id'],))
+        conn.commit()
+        flash("Email vérifié !", "success")
+    else:
+        flash("Lien invalide ou expiré.", "error")
+    conn.close()
+    return redirect('/')
