@@ -112,3 +112,42 @@ def index():
     if 'user_id' in session:
         return redirect('/dashboard')
     return render_template('index.html')
+@app.route('/register', methods=['POST'])
+def register():
+    fullname = request.form['fullname']
+    email = request.form['email']
+    password = request.form['password']
+    hashed = generate_password_hash(password)
+
+    conn = get_db()
+    cur = conn.cursor()
+
+    # Vérifier si l'email est déjà utilisé
+    cur.execute("SELECT id FROM users WHERE email=?", (email,))
+    if cur.fetchone():
+        flash("Email déjà utilisé.", "error")
+        conn.close()
+        return redirect('/')
+
+    # Créer l'utilisateur
+    cur.execute("INSERT INTO users (fullname, email, password, is_verified) VALUES (?, ?, ?, ?)",
+                (fullname, email, hashed, 0))
+    user_id = cur.lastrowid
+
+    # Créer le token de vérification
+    token = str(uuid.uuid4())
+    cur.execute("INSERT INTO email_verification (user_id, token) VALUES (?, ?)", (user_id, token))
+
+    # 🔽 Créer les dossiers par défaut
+    default_folders = ['Eau', 'Électricité', 'Assurance']
+    for name in default_folders:
+        cur.execute("INSERT INTO folders (name, user_id) VALUES (?, ?)", (name, user_id))
+
+    # Commit & close
+    conn.commit()
+    conn.close()
+
+    # Envoyer l'email de vérification
+    send_verification_email(email, token)
+    flash("Inscription réussie ! Vérifiez votre email.", "success")
+    return redirect('/')
