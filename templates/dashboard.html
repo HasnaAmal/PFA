@@ -49,6 +49,11 @@
     </aside>
     <main class="dashboard-main" id="main">
         <!-- Welcome Section -->
+        <!---------------------------------------------------------------------------------------->
+        <div class="drakmodebtn">
+            <input type="checkbox" title="Dark mode" id="checkMe" class="checkMe">
+        </div>
+        <!------------------------------------------------------------------------------------------->
         <section class="welcome-section fade-in">
             <div class="welcome-card">
                 <div class="profile-info">
@@ -301,7 +306,7 @@
             </form>
         </div>
     </div>
-
+    <script src="{{ url_for('static', filename='js/DashboardDarkMode.js') }}"></script>
 </body>
 
 </html>

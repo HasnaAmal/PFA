@@ -188,6 +188,9 @@
                 </ul>
             </nav>
             <a href="{{ url_for('index') }}#login" class="btn" data-scroll="login">Get started</a>
+            <div class="drakmodebtn">
+                <input type="checkbox" title="Dark mode" id="checkMe" class="checkMe">
+            </div>
         </div>
     </header>
     <div class="main">
@@ -224,6 +227,7 @@
         
     </div>
       <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ForgotDarkMode.js') }}"></script>
 
 </body>
 

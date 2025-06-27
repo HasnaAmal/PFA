@@ -606,3 +606,8 @@ input:focus {
   gap: 1rem;
   margin-top: 1rem;
 }
+
+/* dark mode btn style*/
+#checkMe {
+  -webkit-appearance: none;
+}

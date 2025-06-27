@@ -56,6 +56,9 @@
   <section class="profile-container">
     
     <div class="profile-header">
+      <!-------------------------------------------------------------------------------->
+        <input type="checkbox" title="Dark mode" id="checkMe">
+        <!--------------------------------------------------------------------------------->
       <div class="profile-picture">
         <div class="profile-picture-wrapper" onclick="openImageModal()">
           <img src="{{ session.profile_pic or url_for('static', filename='img/default-profile.png') }}" id="profilePreview" alt="Photo de Profil" />
@@ -184,7 +187,7 @@
   </section>
 </main>
 
-
+<script src="{{ url_for('static',filename='js/AccountDrakMode.js') }}"></script>
   <script>
     function toggleSidebar() {
       const sidebar = document.getElementById('sidebar');
