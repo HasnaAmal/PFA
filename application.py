@@ -15,3 +15,5 @@ from pdf2image import convert_from_path
 import pytesseract
 from dotenv import load_dotenv 
 load_dotenv()
+os.environ['TESSDATA_PREFIX'] = r'C:\Program Files\Tesseract-OCR\tessdata'
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
