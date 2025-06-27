@@ -743,3 +743,46 @@ body {
 .empty-state .btn:hover {
     background: var(--sage-dark);
 }
+.flash-message {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    list-style: none;
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 40px;
+    box-shadow: var(--shadow-md);
+    z-index: 1000;
+    animation: fadeInOut 2s ease-in-out forwards;
+
+}
+
+.flash-message.success {
+    background: var(--success);
+}
+
+.flash-message.error {
+    background: var(--danger);
+}
+
+@keyframes fadeInOut {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    10% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    90% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+}
