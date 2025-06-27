@@ -210,3 +210,34 @@ def forgot():
         conn.close()
         return redirect('/')
     return render_template('forgot.html')
+@app.route('/reset-password', methods=['GET', 'POST'])
+def reset_password():
+    if request.method == 'GET':
+        return render_template('reset_password.html', token=request.args.get('token'))
+
+    token = request.form['token']
+    password = request.form['password']
+    confirm_password = request.form['confirm_password']
+
+    # Vérifie si les deux mots de passe correspondent
+    if password != confirm_password:
+        flash("Mots de passe non indentiques.", "error")
+        return render_template('reset_password.html', token=token)
+
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT user_id FROM password_reset WHERE token=?", (token,))
+    row = cur.fetchone()
+
+    if row:
+        hashed = generate_password_hash(password)
+        cur.execute("UPDATE users SET password=? WHERE id=?", (hashed, row['user_id']))
+        cur.execute("DELETE FROM password_reset WHERE user_id=?", (row['user_id'],))
+        conn.commit()
+        flash("Mot de passe réinitialisé !", "success")
+        conn.close()
+        return redirect('/')
+    else:
+        flash("Lien invalide ou expiré.", "error")
+        conn.close()
+        return redirect('/')
