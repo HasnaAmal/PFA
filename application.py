@@ -302,3 +302,4 @@ def extract_text_from_file(path):
             return ""
     else:
         return ""
+from utils_classifier import classify_document
