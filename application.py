@@ -270,6 +270,16 @@ def get_notifications():
 
     notif_list = [dict(row) for row in notifications]
     return jsonify(notif_list)
+@app.route('/api/notifications/read', methods=['POST'])
+def mark_notifications_read():
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not logged in'}), 401
+
+    db = get_db()
+    db.execute('UPDATE notifications SET is_read = 1 WHERE user_id = ?', (session['user_id'],))
+    db.commit()
+
+    return jsonify({'success': True})
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' not in session:
