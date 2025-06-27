@@ -282,6 +282,8 @@ def dashboard():
                            reminders=reminders,
                            notifications=notifications,
                            notif_count=notif_count)
+def generate_confirmation_url(token):
+    return url_for('confirm_email', token=token, _external=True)
 import itsdangerous
 
 serializer = itsdangerous.URLSafeTimedSerializer(app.secret_key)
