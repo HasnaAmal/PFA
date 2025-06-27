@@ -303,6 +303,14 @@ def extract_text_from_file(path):
     else:
         return ""
 from utils_classifier import classify_document
+import unicodedata
+
+def normalize(text):
+    """حيد التشكيل (accents) وبدل كلشي لحروف صغيرة"""
+    return ''.join(
+        c for c in unicodedata.normalize('NFD', text)
+        if unicodedata.category(c) != 'Mn'
+    ).lower()
 import uuid
 
 @app.route('/upload', methods=['POST'])
@@ -371,3 +379,72 @@ def upload():
 
     flash(f'Fichier uploadé avec succès. Catégorie détectée : {category}', 'success')
     return redirect(url_for('folders'))
+@app.route('/reminders')
+def reminders():
+    if 'user_id' not in session:
+        return redirect(url_for('index'))
+    
+    send_due_reminders(session['user_id'])
+
+    db = get_db()
+    user_id = session['user_id']
+    reminders_rows = db.execute('''
+        SELECT r.*, f.name AS file_name FROM reminders r
+        LEFT JOIN files f ON r.file_id = f.id
+        WHERE r.user_id = ?
+        ORDER BY r.due_date ASC
+    ''', (user_id,)).fetchall()
+    reminders = [dict(r) for r in reminders_rows]
+    files = db.execute('SELECT * FROM files WHERE user_id = ?', (session['user_id'],)).fetchall()
+    notifications = db.execute('''
+        SELECT * FROM notifications
+        WHERE user_id = ?
+        ORDER BY id DESC
+        LIMIT 10
+    ''', (user_id,)).fetchall()
+    notif_count = db.execute("SELECT COUNT(*) FROM notifications WHERE user_id = ?", (user_id,)).fetchone()[0]
+
+    return render_template('reminders.html', reminders=reminders, files=files, notifications=notifications,
+                           notif_count=notif_count)
+
+from datetime import datetime
+
+@app.route('/add_reminder', methods=['POST'])
+def add_reminder():
+    if 'user_id' not in session:
+        return redirect(url_for('index'))
+
+    title = request.form.get('title', '').strip()
+    date_part = request.form.get('due_date', '').strip()
+    time_part = request.form.get('due_time', '').strip()
+    file_id = request.form.get('file_id')
+
+    if not title or not date_part:
+        flash('Tous les champs sont obligatoires.', 'error')
+        return redirect(url_for('reminders'))
+
+    if not time_part:
+        time_part = '00:00'
+
+    try:
+        full_datetime_str = f"{date_part} {time_part}:00"
+        due_date = datetime.strptime(full_datetime_str, '%Y-%m-%d %H:%M:%S')
+    except ValueError:
+        flash("Format de date ou d'heure invalide.", "error")
+        return redirect(url_for('reminders'))
+
+    if file_id == '':
+        file_id = None
+
+    db = get_db()
+    db.execute('''
+        INSERT INTO reminders (title, due_date, user_id, file_id, email_sent)
+        VALUES (?, ?, ?, ?, 0)
+    ''', (title, due_date.strftime('%Y-%m-%d %H:%M:%S'), session['user_id'], file_id))
+    db.commit()
+    reminder_id = db.execute("SELECT last_insert_rowid()").fetchone()[0]
+    add_notification(db, session['user_id'], f'⏰ Nouveau rappel "{title}" ajouté.', 'reminder', reminder_id, created_at= datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+    db.commit()
+
+    flash('Rappel ajouté avec succès.', 'success')
+    return redirect(url_for('reminders'))
