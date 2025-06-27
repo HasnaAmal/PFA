@@ -275,12 +275,7 @@
         document.addEventListener('click', function () {
             dropdown.classList.remove('show');
         });
-
-        // استدعي اول مرة عند تحميل الصفحة
-        fetchNotifications();
-
-        // استدعي كل 60 ثانية (60000 مللي ثانية)
-        setInterval(fetchNotifications, 60000);
+        
         function openUploadModal() {
             document.getElementById("uploadModal").style.display = "block";
         }
