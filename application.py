@@ -606,3 +606,14 @@ def init_db():
         file_id INTEGER,
         user_id INTEGER NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS notifications (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        message TEXT NOT NULL,
+        type TEXT, -- file, folder, reminder...
+        related_id INTEGER, -- id ديال العنصر المرتبط
+        is_read INTEGER DEFAULT 0
+    );
+    ''')
+    conn.commit()
+    conn.close()
