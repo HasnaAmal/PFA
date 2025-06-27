@@ -363,3 +363,11 @@ def upload():
         )
         db.commit()
         folder_id = cursor.lastrowid
+    db.execute('''
+        INSERT INTO files (name, path, size, folder_id, user_id, category)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', (original_filename, path, size, folder_id, session['user_id'], category))
+    db.commit()
+
+    flash(f'Fichier uploadé avec succès. Catégorie détectée : {category}', 'success')
+    return redirect(url_for('folders'))
