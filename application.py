@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session, send_from_directory, flash, url_for, current_app
+from flask import Flask, render_template, request, redirect, session, send_from_directory, flash, url_for, current_app, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import timedelta, datetime
 from sendgrid import SendGridAPIClient
