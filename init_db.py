@@ -115,6 +115,7 @@ def init_db():
     CREATE TABLE IF NOT EXISTS reminders (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
+        description TEXT DEFAULT '',
         due_date TEXT NOT NULL,
         is_paid BOOLEAN DEFAULT 0,
         file_id INTEGER,
