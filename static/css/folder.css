@@ -715,3 +715,8 @@ body {
 .file-btn.download:hover {
     color: #689f38; /* vert foncé au survol */
 }
+
+/* dark mode btn style*/
+#checkMe {
+  -webkit-appearance: none;
+}
