@@ -282,6 +282,9 @@ def dashboard():
                            reminders=reminders,
                            notifications=notifications,
                            notif_count=notif_count)
+import itsdangerous
+
+serializer = itsdangerous.URLSafeTimedSerializer(app.secret_key)
 def generate_token(user_id, new_email):
     return serializer.dumps([user_id, new_email], salt='email-change-salt')
 def confirm_token(token, expiration=3600):
