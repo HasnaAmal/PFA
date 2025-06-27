@@ -282,6 +282,12 @@ def dashboard():
                            reminders=reminders,
                            notifications=notifications,
                            notif_count=notif_count)
+def confirm_token(token, expiration=3600):
+    try:
+        user_id, new_email = serializer.loads(token, salt='email-change-salt', max_age=expiration)
+        return user_id, new_email
+    except:
+        return None, None
 @app.route('/account', methods=['GET', 'POST'])
 def account():
     user_id = session.get('user_id')
