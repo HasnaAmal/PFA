@@ -107,3 +107,8 @@ def send_password_reset_email(email, token):
 """
     send_email("Réinitialisation du mot de passe", html, email)
 
+@app.route('/')
+def index():
+    if 'user_id' in session:
+        return redirect('/dashboard')
+    return render_template('index.html')
