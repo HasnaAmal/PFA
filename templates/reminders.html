@@ -59,8 +59,8 @@
             <div class="welcome-card">
                 <div class="profile-info">
                     <div class="profile-pic">
-                        <img src="{{ session.profile_pic or url_for('static', filename='images/default-profile.png') }}"
-                            alt="Photo de profil" class="profile-image" />
+                        <img src="{{ session.profile_pic or url_for('static', filename='img/default-profile.png') }}"
+                            alt="Photo de profil" class="profile-image">
                     </div>
                     <div class="profile-text">
                         <h2>Bienvenue, {{ session.fullname }}</h2>
