@@ -476,6 +476,95 @@ def account():
     notif_count = db.execute('SELECT COUNT(*) FROM notifications WHERE user_id = ?', (user_id,)).fetchone()[0]
 
     return render_template('account.html', notifications=notifications, notif_count=notif_count)
+
+@app.route('/api/folder_files/<int:folder_id>')
+def get_folder_files(folder_id):
+    conn = sqlite3.connect('app.db')
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+        SELECT f.name
+        FROM files f
+        JOIN folders d ON f.folder_id = d.id
+        WHERE d.id = ?
+    ''', (folder_id,))
+    
+    files = [{'name': row[0]} for row in cursor.fetchall()]
+    
+    # Récupérer le nom du dossier pour l'afficher dans la modale
+    cursor.execute('SELECT name FROM folders WHERE id = ?', (folder_id,))
+    folder_name = cursor.fetchone()
+    conn.close()
+    
+    return jsonify({
+        'folder_name': folder_name[0] if folder_name else 'Dossier inconnu',
+        'files': files
+    })
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+from flask import send_from_directory, abort
+import os
+
+
+@app.route('/download/<path:filename>')
+def download_file(filename):
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    if os.path.exists(file_path):
+        return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
+    else:
+        abort(404)
+
+@app.route('/delete_file/<int:file_id>', methods=['POST'])
+def delete_file(file_id):
+    db = get_db()
+    user_id = session.get('user_id')
+
+    file = db.execute('SELECT * FROM files WHERE id = ? AND user_id = ?', (file_id, user_id)).fetchone()
+    if not file:
+        return "Fichier non trouvé ou accès refusé", 403
+
+    filename = secure_filename(file['name'])
+    upload_folder = os.path.abspath(current_app.config['UPLOAD_FOLDER'])
+    filepath = os.path.abspath(os.path.join(upload_folder, filename))
+
+    if not filepath.startswith(upload_folder):
+        return "Accès interdit", 403
+
+    if os.path.exists(filepath):
+        os.remove(filepath)
+
+    db.execute('DELETE FROM files WHERE id = ?', (file_id,))
+    db.commit()
+    return redirect(url_for('folders'))
+
+def get_or_create_folder(db, user_id, folder_name):
+    folder = db.execute("SELECT id FROM folders WHERE user_id = ? AND name = ?", (user_id, folder_name)).fetchone()
+    if folder:
+        return folder['id']
+    db.execute("INSERT INTO folders (user_id, name) VALUES (?, ?)", (user_id, folder_name))
+    db.commit()
+    return db.execute("SELECT last_insert_rowid()").fetchone()[0]
+    
+@app.route('/folders/<int:folder_id>/content')
+def folder_content(folder_id):
+    if 'user_id' not in session:
+        return redirect(url_for('index'))
+
+    db = get_db()
+    user_id = session['user_id']
+
+    # نتأكد من أن الفولدر يخص المستخدم
+    folder = db.execute("SELECT * FROM folders WHERE id = ? AND user_id = ?", (folder_id, user_id)).fetchone()
+    if not folder:
+        return "<p>Dossier non trouvé ou accès refusé.</p>"
+
+    files = db.execute("SELECT * FROM files WHERE folder_id = ? AND user_id = ?", (folder_id, user_id)).fetchall()
+
+    # نرجع جزء HTML صغير فقط
+    return render_template('folder_content.html', folder=folder, files=files)
+    
 @app.route('/delete_account', methods=['POST'])
 def delete_account():
     user_id = session.get('user_id')
