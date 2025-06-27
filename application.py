@@ -568,3 +568,15 @@ def init_db():
         password TEXT NOT NULL,
         is_verified INTEGER DEFAULT 0
     );
+    CREATE TABLE IF NOT EXISTS email_change_requests (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        new_email TEXT NOT NULL,
+        token TEXT NOT NULL UNIQUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS email_verification (
+        user_id INTEGER PRIMARY KEY,
+        token TEXT NOT NULL,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
