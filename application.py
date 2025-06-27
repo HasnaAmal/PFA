@@ -250,6 +250,26 @@ def add_notification(db, user_id, message, type, related_id, created_at):
         INSERT INTO notifications (user_id, message, type, related_id, is_read, created_at)
         VALUES (?, ?, ?, ?, 0, ?)
     ''', (user_id, message, type, related_id, created_at))
+@app.route('/api/notifications')
+def get_notifications():
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not logged in'}), 401
+
+    user_id = session['user_id']
+    db = get_db()
+
+    notifications = db.execute('''
+        SELECT id, message, type, related_id, is_read, created_at
+        FROM notifications
+        WHERE user_id = ? AND is_read = 0
+        ORDER BY created_at DESC
+    ''', (user_id,)).fetchall()
+
+    db.execute('UPDATE notifications SET is_read = 1 WHERE user_id = ? AND is_read = 0', (user_id,))
+    db.commit()
+
+    notif_list = [dict(row) for row in notifications]
+    return jsonify(notif_list)
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' not in session:
