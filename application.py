@@ -341,3 +341,7 @@ def upload():
     else:
         flash('Format de fichier non supporté.', 'error')
         return redirect(url_for('files'))
+    category = classify_document(text, original_filename)
+    if not category:
+        category = 'non_catégorisé'
+    category_norm = normalize(category)
