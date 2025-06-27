@@ -555,6 +555,17 @@ def extract_text_from_file(path):
             return ""
     else:
         return ""
+def extract_text_from_file(filepath):
+    if filepath.lower().endswith('.pdf'):
+        images = convert_from_path(filepath)
+        text = ''
+        for img in images:
+            text += pytesseract.image_to_string(img, lang='fra')
+        return text
+    elif filepath.lower().endswith(('.png', '.jpg', '.jpeg')):
+        img = Image.open(filepath)
+        return pytesseract.image_to_string(img, lang='fra')
+    return ''
 from utils_classifier import classify_document
 import unicodedata
 
