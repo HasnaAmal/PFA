@@ -254,3 +254,14 @@ if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+def preprocess_image(image):
+    # تحويل لصورة رمادية
+    image = image.convert('L')
+    # رفع التباين
+    enhancer = ImageEnhance.Contrast(image)
+    image = enhancer.enhance(2)
+    # إزالة التشويش بخاصية MedianFilter
+    image = image.filter(ImageFilter.MedianFilter(size=3))
+    # Thresholding: جرب تغير 120 حسب جودة الصورة
+    image = image.point(lambda x: 0 if x < 120 else 255, '1')
+    return image
