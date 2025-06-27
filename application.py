@@ -282,6 +282,128 @@ def dashboard():
                            reminders=reminders,
                            notifications=notifications,
                            notif_count=notif_count)
+@app.route('/account', methods=['GET', 'POST'])
+def account():
+    user_id = session.get('user_id')
+    db = get_db()
+
+    if not user_id:
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        action = request.form.get('action')
+
+        # 📧 Mise à jour de l'adresse email
+        if action == 'update_email':
+            new_email = request.form.get('email')
+            if new_email and new_email != session.get('email'):
+                token = generate_token(user_id, new_email)
+                confirm_url = generate_confirmation_url(token)
+
+                html = f"""
+                <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333;">
+                  <h2 style="color: #2c3e50;">Bonjour {session.get('fullname', 'Utilisateur')},</h2>
+                  <p>Nous avons bien reçu votre demande de mise à jour de votre adresse email sur <strong>Arkivo</strong>.</p>
+                  <p>Pour finaliser cette modification et sécuriser votre compte, veuillez confirmer votre nouvelle adresse email en cliquant sur le bouton ci-dessous :</p>
+                  <p style="text-align: center; margin: 30px 0;">
+                    <a href="{confirm_url}" style="background-color: #28a745; color: white; padding: 15px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                      Confirmer mon adresse email
+                    </a>
+                  </p>
+                  <p>Si le bouton ne fonctionne pas, copiez-collez ce lien dans votre navigateur :</p>
+                  <p><a href="{confirm_url}">{confirm_url}</a></p>
+                  <hr>
+                  <p style="font-size: 0.9em; color: #777;">Si vous n'avez pas demandé ce changement, ignorez simplement ce message.</p>
+                  <p style="font-size: 0.9em;">Merci de faire confiance à <strong>Arkivo</strong> !</p>
+                </div>
+                """
+                send_email("Confirmez votre nouvel email", html, new_email, to_name=session.get('fullname', 'Utilisateur'))
+
+                flash("Un email de confirmation a été envoyé à votre nouvelle adresse. Veuillez vérifier votre boîte.", "success")
+            else:
+                flash("Veuillez saisir une nouvelle adresse email différente de l'actuelle.", "warning")
+            return redirect(url_for('account'))
+
+        # 👤 Mise à jour du nom complet
+        elif action == 'update_fullname':
+            fullname = request.form.get('fullname')
+            if fullname:
+                db.execute('UPDATE users SET fullname = ? WHERE id = ?', (fullname, user_id))
+                db.commit()
+                session['fullname'] = fullname
+                flash("Votre nom a été mis à jour.", "success")
+            else:
+                flash("Le nom complet ne peut pas être vide.", "warning")
+            return redirect(url_for('account'))
+
+          # ✅ Mise à jour de la photo de profil
+        if 'profile_picture' in request.files:
+            image = request.files['profile_picture']
+            if image.filename != '':
+                # Nom unique et sécurisé
+                filename = f"user_{user_id}_{image.filename}"
+                filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+                image.save(filepath)
+
+                # Met à jour la DB
+                db.execute('UPDATE users SET profile_pic = ? WHERE id = ?', (filename, user_id))
+                db.commit()
+
+                # Met à jour la session pour affichage immédiat
+                session['profile_pic'] = url_for('static', filename=f'uploads/{filename}')
+                flash("Photo de profil mise à jour avec succès.", "success")
+                return redirect(url_for('account'))
+        # Vérifier si l'utilisateur change mot de passe
+        current_password = request.form.get('current_password')
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+
+        # Si tous les champs sont remplis (on veut changer le mot de passe)
+        if current_password and new_password and confirm_password:
+            # Récupérer le mot de passe actuel depuis la base
+            user = db.execute('SELECT * FROM users WHERE id = ?', (user_id,)).fetchone()
+
+            if not check_password_hash(user['password'], current_password):
+                flash("Mot de passe actuel incorrect.", "error")
+                return redirect(url_for('account'))
+
+            if new_password != confirm_password:
+                flash("Le nouveau mot de passe ne correspond pas à la confirmation.", "error")
+                return redirect(url_for('account'))
+
+            if len(new_password) < 8 or not any(char.isdigit() for char in new_password) or not any(char.isupper() for char in new_password):
+                flash("Le mot de passe doit contenir au moins 8 caractères, un chiffre et une majuscule.", "warning")
+                return redirect(url_for('account'))
+
+            # Tout est OK : mise à jour du mot de passe
+            hashed_password = generate_password_hash(new_password)
+            db.execute('UPDATE users SET password = ? WHERE id = ?', (hashed_password, user_id))
+            db.commit()
+            session.clear()
+            flash("Mot de passe modifié. Veuillez vous reconnecter.", "success")  # ✅ flash après clear
+            return redirect(url_for("index"))
+
+
+        # Sinon, c’est juste la mise à jour nom/email
+        fullname = request.form.get('fullname')
+        email = request.form.get('email')
+
+        if fullname and email:
+            db.execute('UPDATE users SET fullname = ?, email = ? WHERE id = ?', (fullname, email, user_id))
+            db.commit()
+            session['fullname'] = fullname
+            session['email'] = email
+            flash("Profil mis à jour.", "success")
+            return redirect(url_for('account'))
+
+    # Récupérer les notifications
+    notifications = db.execute('''
+        SELECT * FROM notifications WHERE user_id = ? ORDER BY id DESC LIMIT 10
+    ''', (user_id,)).fetchall()
+
+    notif_count = db.execute('SELECT COUNT(*) FROM notifications WHERE user_id = ?', (user_id,)).fetchone()[0]
+
+    return render_template('account.html', notifications=notifications, notif_count=notif_count)
 from PIL import Image, ImageEnhance, ImageFilter
 import pytesseract
 import os
