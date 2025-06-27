@@ -86,3 +86,24 @@ def send_verification_email(email, token):
 </div>
 """
     send_email("Vérification de votre compte", html, email)
+def send_password_reset_email(email, token):
+    link = url_for('reset_password', token=token, _external=True)
+    html = f"""
+<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333;">
+  <h2 style="color: #2c3e50;">Réinitialisation de votre mot de passe</h2>
+  <p>Vous avez demandé à réinitialiser votre mot de passe. Pas de panique !</p>
+  <p>Pour créer un nouveau mot de passe, cliquez simplement sur le bouton ci-dessous :</p>
+  <p style="text-align: center; margin: 30px 0;">
+    <a href="{link}" style="background-color: #28a745; color: white; padding: 15px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+      Réinitialiser mon mot de passe
+    </a>
+  </p>
+  <p>Si le bouton ne fonctionne pas, copiez-collez ce lien dans votre navigateur :</p>
+  <p><a href="{link}" style="color: #FF5722;">{link}</a></p>
+  <hr>
+  <p style="font-size: 0.9em; color: #777;">Si vous n'avez pas demandé cette réinitialisation, ignorez simplement ce message.</p>
+  <p style="font-size: 0.9em;">Merci de faire confiance à <strong>Arkivo</strong> !</p>
+</div>
+"""
+    send_email("Réinitialisation du mot de passe", html, email)
+
