@@ -555,3 +555,16 @@ def delete_reminder(reminder_id):
     db.commit()
     flash("Rappel supprimé avec succès.", "success")
     return redirect(url_for('reminders'))
+# --- Database setup ---
+def init_db():
+    conn = get_db()
+    cur = conn.cursor()
+    cur.executescript('''
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        fullname TEXT NOT NULL,
+        email TEXT NOT NULL UNIQUE,
+        profile_pic TEXT,
+        password TEXT NOT NULL,
+        is_verified INTEGER DEFAULT 0
+    );
