@@ -282,6 +282,14 @@ def dashboard():
                            reminders=reminders,
                            notifications=notifications,
                            notif_count=notif_count)
+@app.before_request
+def load_profile_picture():
+    user_id = session.get('user_id')
+    if user_id and 'profile_pic' not in session:
+        db = get_db()
+        user = db.execute('SELECT profile_pic FROM users WHERE id = ?', (user_id,)).fetchone()
+        if user and user['profile_pic']:
+            session['profile_pic'] = url_for('static', filename=f'uploads/{user["profile_pic"]}')
 def generate_confirmation_url(token):
     return url_for('confirm_email', token=token, _external=True)
 import itsdangerous
