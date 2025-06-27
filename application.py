@@ -341,6 +341,19 @@ def confirm_token(token, expiration=3600):
         return user_id, new_email
     except:
         return None, None
+@app.route('/confirm_email/<token>')
+def confirm_email(token):
+    user_id, new_email = confirm_token(token)
+    if not user_id:
+        flash("Le lien de confirmation est invalide ou expiré.", "error")
+        return redirect(url_for('account'))
+
+    db = get_db()
+    db.execute('UPDATE users SET email = ? WHERE id = ?', (new_email, user_id))
+    db.commit()
+    session['email'] = new_email
+    flash("Votre adresse email a bien été mise à jour.", "success")
+    return redirect(url_for('account'))
 @app.route('/account', methods=['GET', 'POST'])
 def account():
     user_id = session.get('user_id')
