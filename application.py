@@ -245,6 +245,43 @@ def reset_password():
         flash("Lien invalide ou expiré.", "error")
         conn.close()
         return redirect('/')
+@app.route('/dashboard')
+def dashboard():
+    if 'user_id' not in session:
+        return redirect(url_for('index'))
+
+    db = get_db()
+    user_id = session['user_id']
+
+    file_count = db.execute("SELECT COUNT(*) FROM files WHERE user_id = ?", (user_id,)).fetchone()[0]
+    folder_count = db.execute("SELECT COUNT(*) FROM folders WHERE user_id = ?", (user_id,)).fetchone()[0]
+    reminder_count = db.execute("SELECT COUNT(*) FROM reminders WHERE user_id = ?", (user_id,)).fetchone()[0]
+    
+    reminders = db.execute('''
+        SELECT r.*, f.name AS file_name FROM reminders r
+        LEFT JOIN files f ON r.file_id = f.id
+        WHERE r.user_id = ?
+        ORDER BY r.due_date ASC
+        LIMIT 5
+    ''', (user_id,)).fetchall()
+
+    # 🧠 جلب الإشعارات
+    notifications = db.execute('''
+        SELECT * FROM notifications
+        WHERE user_id = ?
+        ORDER BY id DESC
+        LIMIT 10
+    ''', (user_id,)).fetchall()
+
+    notif_count = db.execute("SELECT COUNT(*) FROM notifications WHERE user_id = ?", (user_id,)).fetchone()[0]
+
+    return render_template('dashboard.html',
+                           file_count=file_count,
+                           folder_count=folder_count,
+                           reminder_count=reminder_count,
+                           reminders=reminders,
+                           notifications=notifications,
+                           notif_count=notif_count)
 from PIL import Image, ImageEnhance, ImageFilter
 import pytesseract
 import os
