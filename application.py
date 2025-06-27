@@ -245,6 +245,11 @@ def reset_password():
         flash("Lien invalide ou expiré.", "error")
         conn.close()
         return redirect('/')
+def add_notification(db, user_id, message, type, related_id, created_at):
+    db.execute('''
+        INSERT INTO notifications (user_id, message, type, related_id, is_read, created_at)
+        VALUES (?, ?, ?, ?, 0, ?)
+    ''', (user_id, message, type, related_id, created_at))
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' not in session:
