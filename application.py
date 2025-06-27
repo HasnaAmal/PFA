@@ -324,3 +324,20 @@ def upload():
     # توليد اسم فريد لتفادي تعارض الملفات
     unique_filename = f"{uuid.uuid4().hex}{ext}"
     path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+    if ext == '.pdf':
+        file.save(path)
+        size = os.path.getsize(path)
+        text = extract_text_from_file(path)
+
+    elif ext in ['.jpeg', '.jpg', '.png']:
+        file_bytes = file.read()
+        size = len(file_bytes)
+        file_stream = BytesIO(file_bytes)
+        text = extract_text_from_image_file(file_stream)
+
+        file.seek(0)
+        file.save(path)
+
+    else:
+        flash('Format de fichier non supporté.', 'error')
+        return redirect(url_for('files'))
