@@ -265,3 +265,13 @@ def preprocess_image(image):
     # Thresholding: جرب تغير 120 حسب جودة الصورة
     image = image.point(lambda x: 0 if x < 120 else 255, '1')
     return image
+def extract_text_from_image_file(file_stream):
+    try:
+        image = Image.open(file_stream)
+        image = preprocess_image(image)
+        # psm 6: assume a uniform block of text
+        text = pytesseract.image_to_string(image, lang='fra', config='--psm 6 --oem 3')
+        return text
+    except Exception as e:
+        print("❌ OCR Error:", e)
+        return ""
