@@ -1323,3 +1323,40 @@ footer button:hover {
     opacity: 1;
     transform: translateY(0);
 }
+
+/* dark mode styling */
+.drakmodebtn {
+    position: absolute;
+    width: 80px;
+    height: 40px;
+    right: 50px;
+}
+
+.checkMe {
+    -webkit-appearance: none;
+    position: absolute;
+    background-color: #f1f1f1;
+    width: 80px;
+    height: 30px;
+    border-radius: 20px;
+    box-shadow: var(--shadow-md);
+    cursor: pointer;
+}
+
+.checkMe::before {
+    content: "";
+    position: absolute;
+    height: 30px;
+    width: 30px;
+    left: 0;
+    background-color: var(--dark);
+    border-radius: 20px;
+    transform: scale(1.2);
+    transition: 0.7s ease;
+    box-shadow: var(--shadow-md);
+}
+
+.checkMe:checked::before {
+    background-color: var(--primary-light);
+    left: 52px;
+}
