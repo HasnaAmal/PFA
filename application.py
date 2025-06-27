@@ -186,3 +186,9 @@ def login():
         return redirect('/dashboard')
     flash("Identifiants invalides.", "error")
     return redirect('/')
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash("Déconnecté.", "info")
+    return redirect('/')
+
