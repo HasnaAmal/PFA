@@ -275,3 +275,30 @@ def extract_text_from_image_file(file_stream):
     except Exception as e:
         print("❌ OCR Error:", e)
         return ""
+def extract_text_from_file(path):
+    ext = path.lower().split('.')[-1]
+    if ext in ['jpeg', 'jpg', 'png']:
+        try:
+            image = Image.open(path)
+            image = preprocess_image(image)
+            text = pytesseract.image_to_string(image, lang='fra', config='--psm 6 --oem 3')
+            return text
+        except Exception as e:
+            print("❌ OCR Image Error:", e)
+            return ""
+    elif ext == 'pdf':
+        text = ""
+        try:
+            doc = fitz.open(path)
+            for page in doc:
+                pix = page.get_pixmap(dpi=400)  # رفع دقة الصورة
+                img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+                img = preprocess_image(img)
+                page_text = pytesseract.image_to_string(img, lang='fra', config='--psm 6 --oem 3')
+                text += page_text + "\n"
+            return text
+        except Exception as e:
+            print("❌ OCR PDF Error:", e)
+            return ""
+    else:
+        return ""
