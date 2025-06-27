@@ -167,3 +167,22 @@ def verify_email():
         flash("Lien invalide ou expiré.", "error")
     conn.close()
     return redirect('/')
+@app.route('/login', methods=['POST'])
+def login():
+    email = request.form['email']
+    password = request.form['password']
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM users WHERE email=?", (email,))
+    user = cur.fetchone()
+    conn.close()
+    if user and check_password_hash(user['password'], password):
+        if not user['is_verified']:
+            flash("Vérifiez votre email d'abord.", "error")
+            return redirect('/')
+        session['user_id'] = user['id']
+        session['fullname'] = user['fullname']
+        session['user_email'] = user['email']
+        return redirect('/dashboard')
+    flash("Identifiants invalides.", "error")
+    return redirect('/')
