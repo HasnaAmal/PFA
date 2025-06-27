@@ -46,3 +46,25 @@ def scheduled_send_reminders():
 
 scheduler.add_job(scheduled_send_reminders, 'interval', minutes=5)
 scheduler.start()
+BREVO_API_KEY = os.getenv("BREVO_API_KEY")
+SENDER_EMAIL = "akramououissal@gmail.com"  # تأكدي يكون مفعل فـ Brevo
+SENDER_NAME = "arkivo"
+
+def send_email(subject, html_content, to_email, to_name="Utilisateur"):
+    url = "https://api.brevo.com/v3/smtp/email"
+    payload = {
+        "sender": {"name": SENDER_NAME, "email": SENDER_EMAIL},
+        "to": [{"email": to_email, "name": to_name}],
+        "subject": subject,
+        "htmlContent": html_content
+    }
+    headers = {
+        "accept": "application/json",
+        "api-key": BREVO_API_KEY,
+        "content-type": "application/json"
+    }
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+        print("Email sent:", response.status_code, response.text)
+    except Exception as e:
+        print("Erreur d'envoi:", e)
