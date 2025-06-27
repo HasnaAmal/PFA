@@ -303,3 +303,18 @@ def extract_text_from_file(path):
     else:
         return ""
 from utils_classifier import classify_document
+import uuid
+
+@app.route('/upload', methods=['POST'])
+def upload():
+    if 'user_id' not in session:
+        return redirect(url_for('index'))
+
+    if 'file' not in request.files:
+        flash('Aucun fichier sélectionné.', 'error')
+        return redirect(url_for('files'))
+
+    file = request.files['file']
+    if file.filename == '':
+        flash('Nom de fichier invalide.', 'error')
+        return redirect(url_for('files'))
