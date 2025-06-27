@@ -448,3 +448,49 @@ def add_reminder():
 
     flash('Rappel ajouté avec succès.', 'success')
     return redirect(url_for('reminders'))
+def send_email_reminder(to_email, subject, content):
+    url = "https://api.brevo.com/v3/smtp/email"
+    payload = {
+        "sender": {"name": SENDER_NAME, "email": SENDER_EMAIL},
+        "to": [{"email": to_email}],
+        "subject": subject,
+        "textContent": content
+    }
+    headers = {
+        "accept": "application/json",
+        "api-key": BREVO_API_KEY,
+        "content-type": "application/json"
+    }
+
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+        print(f"Email sent to {to_email}, status code: {response.status_code}")
+        if response.status_code >= 400:
+            print("Error response:", response.text)
+    except Exception as e:
+        print(f"Error sending email to {to_email}: {e}")
+
+import atexit
+def send_due_reminders(job=None):
+    print(f"[{datetime.now()}] Checking reminders...")
+    db = get_db()
+    now = datetime.now()
+
+    reminders = db.execute('''
+        SELECT * FROM reminders
+        WHERE email_sent = 0
+    ''').fetchall()
+
+    for reminder in reminders:
+        due_date = datetime.strptime(reminder['due_date'], '%Y-%m-%d %H:%M:%S')
+        if due_date <= now:
+            user = db.execute('SELECT email FROM users WHERE id = ?', (reminder['user_id'],)).fetchone()
+            if user and user['email']:
+                send_email_reminder(
+                    user['email'],
+                    f"Reminder: {reminder['title']}",
+                    f"Votre rappel '{reminder['title']}' est prévu pour le {reminder['due_date']}."
+                )
+                db.execute('UPDATE reminders SET email_sent = 1 WHERE id = ?', (reminder['id'],))
+                db.commit()
+    print(f"[{datetime.now()}] Reminders processed.")
