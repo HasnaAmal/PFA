@@ -566,6 +566,16 @@ def extract_text_from_file(filepath):
         img = Image.open(filepath)
         return pytesseract.image_to_string(img, lang='fra')
     return ''
+def extract_main_topic(text):
+    text = text.lower()
+    words = re.findall(r'\b[a-z]{4,}\b', text)
+    common = set(["document", "facture", "page", "client", "nom", "date", "objet", "adresse"])
+    filtered = [w for w in words if w not in common]
+
+    if not filtered:
+        return "Divers"
+    top_word = Counter(filtered).most_common(1)[0][0]
+    return top_word.capitalize()
 from utils_classifier import classify_document
 import unicodedata
 
