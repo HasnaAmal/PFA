@@ -68,3 +68,21 @@ def send_email(subject, html_content, to_email, to_name="Utilisateur"):
         print("Email sent:", response.status_code, response.text)
     except Exception as e:
         print("Erreur d'envoi:", e)
+def send_verification_email(email, token):
+    link = url_for('verify_email', token=token, _external=True)
+    html = f"""
+<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333;">
+  <h2 style="color: #4CAF50;">Bienvenue chez Arkivo !</h2>
+  <p>Merci de vous être inscrit(e) sur notre plateforme.</p>
+  <p>Pour finaliser votre inscription et sécuriser votre compte, veuillez confirmer votre adresse email en cliquant sur le bouton ci-dessous :</p>
+  <p style="text-align: center; margin: 30px 0;">
+    <a href="{link}" style="background-color: #28a745; color: white; padding: 15px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+      Vérifier mon adresse email
+    </a>
+  </p>
+  <p>Si le bouton ne fonctionne pas, copiez-collez ce lien dans votre navigateur :</p>
+  <p><a href="{link}" style="color: #4CAF50;">{link}</a></p>
+  <p>Nous sommes ravis de vous compter parmi nous !</p>
+</div>
+"""
+    send_email("Vérification de votre compte", html, email)
