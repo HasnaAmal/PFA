@@ -494,3 +494,11 @@ def send_due_reminders(job=None):
                 db.execute('UPDATE reminders SET email_sent = 1 WHERE id = ?', (reminder['id'],))
                 db.commit()
     print(f"[{datetime.now()}] Reminders processed.")
+from apscheduler.schedulers.background import BackgroundScheduler
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(send_due_reminders, 'interval', minutes=1)
+scheduler.start()
+
+import atexit
+atexit.register(lambda: scheduler.shutdown())
