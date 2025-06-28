@@ -12,7 +12,45 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}" />
     {% block styles %}{% endblock %}
     <style>
+        /* Clean look */
+        button {
+            padding: 8px 12px;
+            margin: 10px;
+            cursor: pointer;
+        }
 
+        .language-buttons {
+            position: absolute;
+            left: 25%;
+            top: 2%;
+        }
+
+        /* Hide Google stuff */
+        iframe.goog-te-banner-frame {
+            display: none !important;
+        }
+
+        body {
+            top: 0px !important;
+            position: static !important;
+        }
+
+        .goog-logo-link,
+        .goog-te-gadget,
+        .goog-te-banner-frame,
+        #goog-gt-tt,
+        .goog-te-balloon-frame,
+        .goog-te-menu-value {
+            display: none !important;
+        }
+
+        #google_translate_element {
+            display: none !important;
+        }
+
+        .skiptranslate {
+            display: none !important;
+        }
     </style>
 </head>
 
@@ -54,6 +92,17 @@
             <input type="checkbox" title="Dark mode" id="checkMe" class="checkMe">
         </div>
         <!------------------------------------------------------------------------------------------->
+        <!---------------------------------------------------------------------->
+        <div class="language-buttons">
+            <select name="" id="selectLang" onchange="changeLanguage(this)">
+                <option value="en">English</option>
+                <option value="ar">العربية</option>
+                <option value="fr">default</option>
+            </select>
+        </div>
+
+        <div id="google_translate_element"></div>
+        <!------------------------------------------------------------------------------------>
         <section class="welcome-section fade-in">
             <div class="welcome-card">
                 <div class="profile-info">
@@ -296,6 +345,8 @@
             }
         }
     </script>
+    <script src="{{ url_for('static', filename='js/translator.js')}}"></script>
+    <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     <div id="uploadModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeUploadModal()">&times;</span>

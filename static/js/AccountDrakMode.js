@@ -4,12 +4,14 @@ window.onload = () => {
     const isDark = localStorage.getItem("darkMode") === "true";
     checkbtn.checked = isDark;
     AccountDarkModeBtn(isDark);
+    ColorsChange(isDark);
 };
 
 checkbtn.addEventListener("change", () => {
     const isChecked = checkbtn.checked;
     localStorage.setItem("darkMode", isChecked);
     AccountDarkModeBtn(isChecked);
+    ColorsChange(isChecked);
 });
 
 function AccountDarkModeBtn(dark) {
@@ -46,5 +48,20 @@ function AccountDarkModeBtn(dark) {
         });
     }
 
+}
+
+//sidebar_colors
+function ColorsChange(color) {
+    const change = document.querySelectorAll('.sidebar-nav a');
+    if (color) {
+        change.forEach(ch => {
+            ch.classList.add("sidebarDrakModeclr");
+        });
+    }
+    else {
+        change.forEach(ch => {
+            ch.classList.remove("sidebarDrakModeclr");
+        });
+    }
 }
 
