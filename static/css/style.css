@@ -1327,16 +1327,15 @@ footer button:hover {
 /* dark mode styling */
 .drakmodebtn {
     position: absolute;
-    width: 80px;
-    height: 40px;
-    right: 50px;
+    top:25px;
+    right: 90px;
 }
 
 .checkMe {
     -webkit-appearance: none;
     position: absolute;
     background-color: #f1f1f1;
-    width: 80px;
+    width: 60px;
     height: 30px;
     border-radius: 20px;
     box-shadow: var(--shadow-md);
@@ -1346,17 +1345,17 @@ footer button:hover {
 .checkMe::before {
     content: "";
     position: absolute;
-    height: 30px;
-    width: 30px;
+    height: 28px;
+    width: 28px;
     left: 0;
     background-color: var(--dark);
-    border-radius: 20px;
-    transform: scale(1.2);
+    border-radius: 50%;
     transition: 0.7s ease;
     box-shadow: var(--shadow-md);
 }
 
 .checkMe:checked::before {
-    background-color: var(--primary-light);
-    left: 52px;
+    background-color: var(--sage-light);
+    left: 35px;
 }
+
