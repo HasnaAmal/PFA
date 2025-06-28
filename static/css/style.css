@@ -1355,7 +1355,8 @@ footer button:hover {
 }
 
 .checkMe:checked::before {
-    background-color: var(--sage-light);
-    left: 35px;
+    background-color: var(--sage-darker);
+    left: 32px;
+    top:1px
 }
 
