@@ -86,6 +86,7 @@
           </div>
           <div class="form-group">
             <input type="password" placeholder="Mot de passe" name="password" required />
+            <i class="fa-solid fa-eye toggle-password" onclick="togglePassword(this)"></i>
           <a href="{{ url_for('forgot') }}" class="forgot-password">Mot de passe oublié ?</a>
           </div>
           <button type="submit" class="btn-login">Se connecter</button>
@@ -110,8 +111,9 @@
           <div class="form-group">
             <input type="email" placeholder="Email" name="email" required />
           </div>
-          <div class="form-group">
-            <input type="password" placeholder="Mot de passe" name="password" required />
+          <div class="form-group password-wrapper">
+            <input type="password" id="password" placeholder="Mot de passe" name="password" required />
+            <i class="fa-solid fa-eye toggle-password" onclick="togglePassword(this)"></i>
           </div>
           <button type="submit" class="btn-register">S'inscrire</button>
         </form>
