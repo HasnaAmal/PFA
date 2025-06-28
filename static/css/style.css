@@ -1382,12 +1382,15 @@ footer button:hover {
 
 .language-select {
   appearance: none;
-  background-color: #ffffff;
-  color: #333;
-  font-size: 0.95rem;
-  padding: 0.5em ;
+  font-family: "Kumbh Sans", sans-serif;
+  background-color: #ffffffb7;
+  color: #181717;
+  font-size: 0.8rem;
+  font-weight:500 ;
+  padding: 0.3em 0.4em 0.2em 0.5em;
   border: 1px solid #ccc;
-  border-radius: 8px;
+  border-radius: 40px;
+  margin-left: 2px;
   cursor: pointer;
   background-size: 1em;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -1395,7 +1398,7 @@ footer button:hover {
 
 .language-select:focus {
   outline: none;
-  border-color: #4CAF50;
+  border-color: var(--sage-darker);
   box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.3);
 }
 
