@@ -1371,4 +1371,31 @@ footer button:hover {
   cursor: pointer;
   color: #888;
 }
+.notranslate {
+  translate: none;
+}
+.language-buttons {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.8rem;
+}
+
+.language-select {
+  appearance: none;
+  background-color: #ffffff;
+  color: #333;
+  font-size: 0.95rem;
+  padding: 0.5em ;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  cursor: pointer;
+  background-size: 1em;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.language-select:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.3);
+}
 
