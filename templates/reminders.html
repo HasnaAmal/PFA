@@ -108,23 +108,20 @@
         {% endif %}
         {% endwith %}
 
-        <!-- Filters Section -->
+        
+
+        <!-- Reminders List Section -->
         <section class="dashboard-section">
+            <div class="section-header">
+                <h2><i class="fas fa-bell"></i> Mes Rappels</h2>
+                <div class="header-actions">
+                    <span class="count-badge">{{ reminders|length }} rappel(s)</span>
+                </div>
+            </div>
             <div class="filters-container">
                 <div class="search-box">
                     <i class="fas fa-search"></i>
                     <input type="text" placeholder="Rechercher un rappel..." />
-                </div>
-                <div class="filter-buttons">
-                    <button class="filter-btn active">
-                        <i class="fas fa-list"></i> Tous
-                    </button>
-                    <button class="filter-btn">
-                        <i class="fas fa-exclamation-triangle"></i> En retard
-                    </button>
-                    <button class="filter-btn">
-                        <i class="fas fa-clock"></i> Bientôt
-                    </button>
                 </div>
                 <div class="sort-dropdown">
                     <select class="sort-select">
@@ -135,28 +132,15 @@
                     </select>
                 </div>
             </div>
-        </section>
-
-        <!-- Reminders List Section -->
-        <section class="dashboard-section">
-            <div class="section-header">
-                <h2><i class="fas fa-bell"></i> Mes Rappels</h2>
-                <div class="header-actions">
-                    <span class="count-badge">{{ reminders|length }} rappel(s)</span>
-                    <button class="btn btn-outline">
-                        <i class="fas fa-check-square"></i>
-                    </button>
-                </div>
-            </div>
-
             <div class="reminders-container">
                 <div class="reminders-grid">
                     {% if reminders %}
                     {% for reminder in reminders %}
                     <div
-                        class="reminder-card {% if reminder.is_overdue %}overdue{% elif reminder.is_due_soon %}due-soon{% endif %}">
+                        class="reminder-card " data-title="{{ reminder.title | lower }}"
+  data-duedate="{{ reminder.due_date }}">
                         <div class="reminder-content">
-                            <h3>{{ reminder.title }}</h3>
+                            <h3>Rappel : {{ reminder.title }}</h3>
                             {% if reminder.description %}
                             <p>{{ reminder.description[:50] }}{% if reminder.description|length > 50 %}...{% endif %}</p>
                             {% endif %}
@@ -172,20 +156,9 @@
                                 </div>
                                 {% endif %}
                             </div>
-                            <div class="time-remaining">
-                                {% if reminder.is_overdue %}
-                                <span class="overdue">En retard de {{ reminder.days_overdue }} jour(s)</span>
-                                {% elif reminder.is_due_soon %}
-                                <span class="due-soon">Dans {{ reminder.days_until_due }} jour(s)</span>
-                                {% else %}
-                                <span>Dans {{ reminder.days_until_due }} jour(s)</span>
-                                {% endif %}
-                            </div>
+
                         </div>
                         <div class="reminder-actions">
-                            <button class="action-btn done" title="Marquer terminé">
-                                <i class="fas fa-check"></i>
-                            </button>
                             <button class="action-btn" title="Modifier"
                                 onclick='openEditReminderModal({{ reminder | tojson | safe }})'>
                                 <i class="fas fa-edit"></i>
@@ -287,7 +260,6 @@
             icon.classList.toggle('fa-chevron-left');
             icon.classList.toggle('fa-chevron-right');
         }
-
         document.addEventListener('DOMContentLoaded', () => {
             // Initialisation modal édition
             window.editModal = new bootstrap.Modal(document.getElementById('editReminderModal'));
@@ -369,9 +341,61 @@
             } else {
                 console.error("Modal Bootstrap 'editModal' non initialisé !");
             }
-        }
+        };
+        const searchInput = document.querySelector('.search-box input');
+  const sortSelect = document.querySelector('.sort-select');
+  const remindersGrid = document.querySelector('.reminders-grid');
+
+  function filterAndSortReminders() {
+    const searchTerm = searchInput.value.trim().toLowerCase();
+    const sortOption = sortSelect.value;
+    const reminders = Array.from(remindersGrid.querySelectorAll('.reminder-card'));
+
+    // Filtrer selon le titre
+    reminders.forEach(reminder => {
+      const title = reminder.getAttribute('data-title') || reminder.querySelector('h3').textContent.toLowerCase();
+      if (title.toLowerCase().includes(searchTerm)) {
+        reminder.style.display = '';
+      } else {
+        reminder.style.display = 'none';
+      }
+    });
+
+    // Trier les rappels visibles
+    const visibleReminders = reminders.filter(r => r.style.display !== 'none');
+
+    visibleReminders.sort((a, b) => {
+      const titleA = (a.getAttribute('data-title') || a.querySelector('h3').textContent).toLowerCase();
+      const titleB = (b.getAttribute('data-title') || b.querySelector('h3').textContent).toLowerCase();
+
+      const dateA = new Date(a.getAttribute('data-duedate'));
+      const dateB = new Date(b.getAttribute('data-duedate'));
+
+      switch (sortOption) {
+        case 'Date croissante':
+          return dateA - dateB;
+        case 'Date décroissante':
+          return dateB - dateA;
+        case 'Titre A-Z':
+          return titleA.localeCompare(titleB);
+        case 'Titre Z-A':
+          return titleB.localeCompare(titleA);
+        default:
+          return 0;
+      }
+    });
+
+    // Réordonner dans le DOM
+    visibleReminders.forEach(reminder => remindersGrid.appendChild(reminder));
+  }
+
+  searchInput.addEventListener('input', filterAndSortReminders);
+  sortSelect.addEventListener('change', filterAndSortReminders);
+
+  // Appel initial pour appliquer le tri au chargement
+  filterAndSortReminders();
+
     </script>
     <script src="{{ url_for('static', filename='js/logout.js') }}"></script>
 </body>
-
 </html>
