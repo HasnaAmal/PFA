@@ -857,6 +857,20 @@ def delete_folder(folder_id):
     flash("Dossier supprimé avec succès.", "success")
     return redirect(url_for('folders'))
 
+#---rename_folder---
+@app.route('/Rename_Folder', methods=['POST'])
+def Rename_folder():
+    if 'user_id' not in session:
+        return redirect(url_for('index'))
+    
+    ChangedName = request.form.get('changeName').strip()
+    oldName = request.form.get('THEuserName')
+    id = request.form.get('THEuserId')
+    db = get_db()
+    db.execute("UPDATE folders SET name = ? WHERE name = ? AND id = ?", (ChangedName, oldName,id))
+    db.commit()
+    return redirect(url_for('folders'))
+
 @app.route('/reminders')
 def reminders():
     if 'user_id' not in session:
