@@ -4,7 +4,7 @@
 
 ---
 
-## 🌟 Objectifs du Projet
+## 🌟 Objectifs du Projet :
 
 * Offrir un **portefeuille numérique centralisé**.
 * Automatiser l’**organisation des documents**.
@@ -13,7 +13,7 @@
 
 ---
 
-## 🧩 Nos Services
+## 🧩 Nos Services :
 
 ### 📚 **Gestion des documents**
 
@@ -39,7 +39,7 @@
 
 ---
 
-## 👥 Répartition des Tâches
+## 👥 Répartition des Tâches :
 
 | Membre      | Tâches principales                                             |
 | ----------- | -------------------------------------------------------------- |
@@ -49,7 +49,7 @@
 
 ---
 
-## 🛠️ Technologies utilisées
+## 🛠️ Technologies utilisées :
 
 * **Front-end** : HTML5, CSS3, JavaScript
 * **Back-end** : Python / Flask
@@ -59,20 +59,21 @@
 
 ---
 
-## 🚀 Accès à l’application
+## 🚀 Accès à l’application :
 
 👉 Cliquez ici pour découvrir Arkivo : [[🌐 Visiter Arkivo]](https://ouiisal.pythonanywhere.com/)
 
 ---
 
-## 📷 Aperçu
+## 📷 Aperçu :
 
 * **Landing page**
+
 ![image](https://github.com/user-attachments/assets/53e7bf0b-f91b-4c6b-bc8d-802e56fa3ec9)
 
 ---
 
-## 📌 Prochaines évolutions
+## 📌 Prochaines évolutions :
 
 * **Application mobile** (iOS/Android).
 * **Version premium** avec limite de dossiers et fonctionnalités avancées.
