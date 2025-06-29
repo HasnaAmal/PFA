@@ -376,10 +376,12 @@ body {
 .folder-card {
   background-color: #ffffff;
   border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 1.2rem;
+  border-radius: 20px;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
   justify-content: space-between;
   transition: box-shadow 0.3s ease, transform 0.2s ease;
   cursor: pointer;
@@ -564,7 +566,7 @@ body {
 }
 /* Overlay noir transparent */
 .modal-overlay {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
@@ -574,9 +576,9 @@ body {
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  padding-bottom: 150px;
 }
 
-/* Conteneur du modal */
 .modal-container {
   background-color: #ffffff;
   border-radius: 12px;
@@ -626,9 +628,10 @@ body {
   cursor: pointer;
 }
 
-/* Corps */
 .modal-body {
-  padding: 1.5rem;
+  max-height: 400px; /* tu peux ajuster selon ton besoin */
+  overflow-y: auto;
+  padding: 1rem;
 }
 
 #filesList {

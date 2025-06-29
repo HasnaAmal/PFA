@@ -367,9 +367,8 @@
             uploadFolderIdInput.value = folderId;
 
             fetch(`/api/folder_files/${folderId}`)
-                .then(response => response.json())
-                .then(data => {
-                console.log('Files data:', data); 
+    .then(response => response.json())
+    .then(data => {
         modalFolderName.textContent = data.folder_name || 'Dossier';
         filesList.innerHTML = '';
 
@@ -378,63 +377,64 @@
             return;
         }
 
-                        data.files.forEach(file => {
-                            const card = document.createElement('div');
-                            card.className = 'file-card';
+        data.files.forEach(file => {
+            const card = document.createElement('div');
+            card.className = 'file-card';
 
-                            const preview = document.createElement('div');
-                            preview.className = 'file-preview';
+            const preview = document.createElement('div');
+            preview.className = 'file-preview';
 
-                            const isImage = /\.(jpe?g|png|gif|webp)$/i.test(file.name);
-                            const isPDF = /\.pdf$/i.test(file.name);
+            const isImage = /\.(jpe?g|png|gif|webp)$/i.test(file.name);
+            const isPDF = /\.pdf$/i.test(file.name);
 
-                            if (isImage) {
-                                preview.innerHTML = `<img src="/uploads/${encodeURIComponent(file.name)}" alt="Aperçu" />`;
-                            } else if (isPDF) {
-                                preview.innerHTML = `<img src="/static/img/pdf-icon.png" alt="PDF" style="width: 80px; height: 80px;" />`;
-                            } else {
-                                preview.innerHTML = `<i class="fas fa-file-alt fa-3x" style="color:#689f38;"></i>`;
-                            }
+            if (isImage) {
+                preview.innerHTML = `<img src="/uploads/${encodeURIComponent(file.name)}" alt="Aperçu" />`;
+            } else if (isPDF) {
+                preview.innerHTML = `<img src="/static/img/pdf-icon.png" alt="PDF" style="width: 80px; height: 80px;" />`;
+            } else {
+                preview.innerHTML = `<i class="fas fa-file-alt fa-3x" style="color:#689f38;"></i>`;
+            }
 
-                            const title = document.createElement('div');
-                            title.className = 'file-title';
-                            title.textContent = file.name;
+            const title = document.createElement('div');
+            title.className = 'file-title';
+            title.textContent = file.name;
 
-                            const actions = document.createElement('div');
-                            actions.className = 'file-actions';
+            const actions = document.createElement('div');
+            actions.className = 'file-actions';
 
-                            const downloadForm = document.createElement('form');
-                            downloadForm.method = 'GET';
-                            downloadForm.action = `/uploads/${encodeURIComponent(file.name)}`;
-                            downloadForm.innerHTML = `<button type="submit" class="file-btn download" title="Télécharger"><i class="fas fa-download"></i></button>`;
+            const downloadForm = document.createElement('form');
+            downloadForm.method = 'GET';
+            downloadForm.action = `/uploads/${encodeURIComponent(file.name)}`;
+            downloadForm.innerHTML = `<button type="submit" class="file-btn download" title="Télécharger"><i class="fas fa-download"></i></button>`;
 
-                            const deleteForm = document.createElement('form');
-                            deleteForm.method = 'POST';  // 🔴 essentiel
-                            deleteForm.action = `/delete_file/${file.id}`;
-                            deleteForm.onsubmit = function (e) {
-                                if (!confirm(`Supprimer le fichier "${file.name}" ?`)) {
-                                    e.preventDefault();
-                                }
-                            };
+            const deleteForm = document.createElement('form');
+            deleteForm.method = 'POST';
+            deleteForm.action = `/delete_file/${file.id}`;
+            deleteForm.onsubmit = function (e) {
+                if (!confirm(`Supprimer le fichier "${file.name}" ?`)) {
+                    e.preventDefault();
+                }
+            };
 
-                            deleteForm.innerHTML = `
-  <button type="submit" class="file-btn delete" title="Supprimer">
-    <i class="fas fa-trash"></i>
-  </button>`;
+            deleteForm.innerHTML = `
+                <button type="submit" class="file-btn delete" title="Supprimer">
+                    <i class="fas fa-trash"></i>
+                </button>`;
 
-                            actions.appendChild(downloadForm);
-                            actions.appendChild(deleteForm);
+            actions.appendChild(downloadForm);
+            actions.appendChild(deleteForm);
 
-                            card.appendChild(preview);
-                            card.appendChild(title);
-                            card.appendChild(actions);
-                            filesList.appendChild(card);
-                        });
-                    })
-                .catch(() => {
-                    filesList.innerHTML = '<p class="error">Erreur de chargement.</p>';
-                    modalFolderName.textContent = 'Erreur';
-                });
+            card.appendChild(preview);
+            card.appendChild(title);
+            card.appendChild(actions);
+            filesList.appendChild(card);
+        });
+    })
+    .catch(() => {
+        filesList.innerHTML = '<p class="error">Erreur de chargement.</p>';
+        modalFolderName.textContent = 'Erreur';
+    });
+
         }
 
         function closeModal(modalId) {

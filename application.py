@@ -21,7 +21,7 @@ app = Flask(__name__)
 app.secret_key = 'secret_key_tres_forte'
 app.permanent_session_lifetime = timedelta(days=30)
 UPLOAD_FOLDER = 'static/uploads'
-app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'uploads')
+app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
 
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
@@ -537,9 +537,11 @@ import os
 
 @app.route('/download/<path:filename>')
 def download_file(filename):
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    if os.path.exists(file_path):
-        return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
+    safe_name = secure_filename(filename)
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], safe_name)
+
+    if os.path.isfile(file_path):
+        return send_from_directory(app.config['UPLOAD_FOLDER'], safe_name, as_attachment=True)
     else:
         abort(404)
 
@@ -639,8 +641,6 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 UPLOAD_FOLDER = os.path.join(basedir, 'static', 'uploads')
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
-
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 def preprocess_image(image):
     # تحويل لصورة رمادية
     image = image.convert('L')
@@ -734,55 +734,50 @@ def upload():
     if file.filename == '':
         flash('Nom de fichier invalide.', 'error')
         return redirect(url_for('files'))
-    original_filename = secure_filename(file.filename)
-    ext = os.path.splitext(original_filename)[1].lower()
 
-    # توليد اسم فريد لتفادي تعارض الملفات
-    unique_filename = f"{uuid.uuid4().hex}{ext}"
-    path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+    # Utilise le nom original sécurisé
+    filename = secure_filename(file.filename)
+    save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+    # Sauvegarde directe
+    file.save(save_path)
+    size = os.path.getsize(save_path)
+
+    # Extraction & classification
+    ext = os.path.splitext(filename)[1].lower()
     if ext == '.pdf':
-        file.save(path)
-        size = os.path.getsize(path)
-        text = extract_text_from_file(path)
-
+        text = extract_text_from_file(save_path)
     elif ext in ['.jpeg', '.jpg', '.png']:
-        file_bytes = file.read()
-        size = len(file_bytes)
-        file_stream = BytesIO(file_bytes)
-        text = extract_text_from_image_file(file_stream)
-
-        file.seek(0)
-        file.save(path)
-
+        with open(save_path, 'rb') as f:
+            file_stream = BytesIO(f.read())
+            text = extract_text_from_image_file(file_stream)
     else:
         flash('Format de fichier non supporté.', 'error')
         return redirect(url_for('files'))
-    category = classify_document(text, original_filename)
-    if not category:
-        category = 'non_catégorisé'
+
+    category = classify_document(text, filename) or 'non_catégorisé'
     category_norm = normalize(category)
+
     db = get_db()
     folders = db.execute("SELECT id, name FROM folders WHERE user_id = ?", (session['user_id'],)).fetchall()
 
     folder_id = None
     for folder in folders:
-        folder_name_norm = normalize(folder['name'])
-        if folder_name_norm == category_norm:
+        if normalize(folder['name']) == category_norm:
             folder_id = folder['id']
             category = folder['name']
             break
 
     if folder_id is None:
-        cursor = db.execute(
-            "INSERT INTO folders (name, user_id) VALUES (?, ?)",
-            (category, session['user_id'])
-        )
+        cursor = db.execute("INSERT INTO folders (name, user_id) VALUES (?, ?)", (category, session['user_id']))
         db.commit()
         folder_id = cursor.lastrowid
+
+    # Stocke le nom réel dans path
     db.execute('''
         INSERT INTO files (name, path, size, folder_id, user_id, category)
         VALUES (?, ?, ?, ?, ?, ?)
-    ''', (original_filename, path, size, folder_id, session['user_id'], category))
+    ''', (filename, filename, size, folder_id, session['user_id'], category))
     db.commit()
 
     flash(f'Fichier uploadé avec succès. Catégorie détectée : {category}', 'success')
