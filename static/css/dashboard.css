@@ -105,6 +105,7 @@ body {
 }
 .sidebar.collapsed .sidebar-nav a.active, .sidebar.collapsed .sidebar-nav a:hover {
   width: 50px;
+    transition: all 0.3s ease;
 }
 .link-text {
     font-weight: 500;
