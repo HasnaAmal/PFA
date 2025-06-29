@@ -80,12 +80,22 @@
         </nav>
 
         <div class="sidebar-footer">
-            <a href="{{ url_for('logout') }}" class="logout-btn">
-                <i class="fas fa-sign-out-alt"></i>
-                <span class="logout-text">Déconnexion</span>
-            </a>
+            <a href="#" id="logoutBtn" data-logout-url="{{ url_for('logout') }}" class="logout-btn">
+  <i class="fas fa-sign-out-alt"></i>
+  <span class="logout-text">Déconnexion</span>
+</a>
         </div>
     </aside>
+    <!-- Modal simple (tu peux styliser comme tu veux) -->
+    <div id="logoutModal" class="modallogout" style="display:none;">
+  <div class="modal-contentlogout">
+    <p>Êtes-vous sûr de vouloir vous déconnecter ?</p>
+    <button id="confirmLogoutBtn">Oui, déconnecter</button>
+    <button id="cancelLogoutBtn">Annuler</button>
+  </div>
+</div>
+
+
     <!-- Main Content -->
     <main class="dashboard-main" id="main">
         <!-------------------------------------------------------------------------------->
@@ -367,73 +377,73 @@
             uploadFolderIdInput.value = folderId;
 
             fetch(`/api/folder_files/${folderId}`)
-    .then(response => response.json())
-    .then(data => {
-        modalFolderName.textContent = data.folder_name || 'Dossier';
-        filesList.innerHTML = '';
+                .then(response => response.json())
+                .then(data => {
+                    modalFolderName.textContent = data.folder_name || 'Dossier';
+                    filesList.innerHTML = '';
 
-        if (!data.files || data.files.length === 0) {
-            filesList.innerHTML = '<div class="empty-files-message">Aucun fichier dans ce dossier.</div>';
-            return;
-        }
+                    if (!data.files || data.files.length === 0) {
+                        filesList.innerHTML = '<div class="empty-files-message">Aucun fichier dans ce dossier.</div>';
+                        return;
+                    }
 
-        data.files.forEach(file => {
-            const card = document.createElement('div');
-            card.className = 'file-card';
+                    data.files.forEach(file => {
+                        const card = document.createElement('div');
+                        card.className = 'file-card';
 
-            const preview = document.createElement('div');
-            preview.className = 'file-preview';
+                        const preview = document.createElement('div');
+                        preview.className = 'file-preview';
 
-            const isImage = /\.(jpe?g|png|gif|webp)$/i.test(file.name);
-            const isPDF = /\.pdf$/i.test(file.name);
+                        const isImage = /\.(jpe?g|png|gif|webp)$/i.test(file.name);
+                        const isPDF = /\.pdf$/i.test(file.name);
 
-            if (isImage) {
-                preview.innerHTML = `<img src="/uploads/${encodeURIComponent(file.name)}" alt="Aperçu" />`;
-            } else if (isPDF) {
-                preview.innerHTML = `<img src="/static/img/pdf-icon.png" alt="PDF" style="width: 80px; height: 80px;" />`;
-            } else {
-                preview.innerHTML = `<i class="fas fa-file-alt fa-3x" style="color:#689f38;"></i>`;
-            }
+                        if (isImage) {
+                            preview.innerHTML = `<img src="/uploads/${encodeURIComponent(file.name)}" alt="Aperçu" />`;
+                        } else if (isPDF) {
+                            preview.innerHTML = `<img src="/static/img/pdf-icon.png" alt="PDF" style="width: 80px; height: 80px;" />`;
+                        } else {
+                            preview.innerHTML = `<i class="fas fa-file-alt fa-3x" style="color:#689f38;"></i>`;
+                        }
 
-            const title = document.createElement('div');
-            title.className = 'file-title';
-            title.textContent = file.name;
+                        const title = document.createElement('div');
+                        title.className = 'file-title';
+                        title.textContent = file.name;
 
-            const actions = document.createElement('div');
-            actions.className = 'file-actions';
+                        const actions = document.createElement('div');
+                        actions.className = 'file-actions';
 
-            const downloadForm = document.createElement('form');
-            downloadForm.method = 'GET';
-            downloadForm.action = `/uploads/${encodeURIComponent(file.name)}`;
-            downloadForm.innerHTML = `<button type="submit" class="file-btn download" title="Télécharger"><i class="fas fa-download"></i></button>`;
+                        const downloadForm = document.createElement('form');
+                        downloadForm.method = 'GET';
+                        downloadForm.action = `/uploads/${encodeURIComponent(file.name)}`;
+                        downloadForm.innerHTML = `<button type="submit" class="file-btn download" title="Télécharger"><i class="fas fa-download"></i></button>`;
 
-            const deleteForm = document.createElement('form');
-            deleteForm.method = 'POST';
-            deleteForm.action = `/delete_file/${file.id}`;
-            deleteForm.onsubmit = function (e) {
-                if (!confirm(`Supprimer le fichier "${file.name}" ?`)) {
-                    e.preventDefault();
-                }
-            };
+                        const deleteForm = document.createElement('form');
+                        deleteForm.method = 'POST';
+                        deleteForm.action = `/delete_file/${file.id}`;
+                        deleteForm.onsubmit = function (e) {
+                            if (!confirm(`Supprimer le fichier "${file.name}" ?`)) {
+                                e.preventDefault();
+                            }
+                        };
 
-            deleteForm.innerHTML = `
+                        deleteForm.innerHTML = `
                 <button type="submit" class="file-btn delete" title="Supprimer">
                     <i class="fas fa-trash"></i>
                 </button>`;
 
-            actions.appendChild(downloadForm);
-            actions.appendChild(deleteForm);
+                        actions.appendChild(downloadForm);
+                        actions.appendChild(deleteForm);
 
-            card.appendChild(preview);
-            card.appendChild(title);
-            card.appendChild(actions);
-            filesList.appendChild(card);
-        });
-    })
-    .catch(() => {
-        filesList.innerHTML = '<p class="error">Erreur de chargement.</p>';
-        modalFolderName.textContent = 'Erreur';
-    });
+                        card.appendChild(preview);
+                        card.appendChild(title);
+                        card.appendChild(actions);
+                        filesList.appendChild(card);
+                    });
+                })
+                .catch(() => {
+                    filesList.innerHTML = '<p class="error">Erreur de chargement.</p>';
+                    modalFolderName.textContent = 'Erreur';
+                });
 
         }
 
@@ -455,8 +465,10 @@
                 }
             });
         }
+       
     </script>
     <script src="{{ url_for('static', filename='js/translator.js')}}"></script>
+    <script src="{{ url_for('static', filename='js/logout.js') }}"></script>
     <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     <div id="uploadModal" class="modal">
         <div class="modal-content">
