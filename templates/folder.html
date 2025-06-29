@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}Arkivo - Dossiers{% endblock %}</title>
+    <title class="notranslate">{% block title %}Arkivo - Dossiers{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@100..900&display=swap" rel="stylesheet">
@@ -60,7 +60,7 @@
     <!-- Sidebar Navigation -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <h1 class="logo">Arkivo</h1>
+            <h1 class="logo notranslate">Arkivo</h1>
             <button class="toggle-btn" onclick="toggleSidebar()">
                 <i class="fas fa-chevron-left" id="toggleIcon"></i>
             </button>
@@ -139,7 +139,10 @@
                 <h2><i class="fas fa-folder"></i> Mes Dossiers</h2>
                 <span class="count-badge">{{ folders|length }} dossier(s)</span>
             </div>
-
+<div class="search-bar">
+  <input type="text" id="searchInput" placeholder="Rechercher un dossier..." onkeyup="filterItems()" style="padding-left: 2.2rem;">
+  <i class="fas fa-search"></i>
+</div>
             <div class="folders-grid">
                 {% if folders %}
                 {% for folder in folders %}
@@ -369,9 +372,8 @@
                     filesList.innerHTML = '';
 
                     if (!data.files || data.files.length === 0) {
-                        filesList.innerHTML = '<p>Aucun fichier dans ce dossier.</p>';
-                        return;
-                    }
+    filesList.innerHTML = '<div class="empty-files-message">Aucun fichier dans ce dossier.</div>';
+    return;
 
                     data.files.forEach(file => {
                         const card = document.createElement('div');
@@ -435,7 +437,21 @@
         function closeModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
         }
-
+function filterItems() {
+    const input = document.getElementById('searchInput').value.toLowerCase();
+    const folderCards = document.querySelectorAll('.folder-card');
+    
+    folderCards.forEach(card => {
+        const folderName = card.querySelector('h3').textContent.toLowerCase();
+        const fileInfo = card.querySelector('p').textContent.toLowerCase();
+        
+        if (folderName.includes(input) || fileInfo.includes(input)) {
+            card.style.display = "flex";
+        } else {
+            card.style.display = "none";
+        }
+    });
+}
     </script>
     <script src="{{ url_for('static', filename='js/translator.js')}}"></script>
     <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
