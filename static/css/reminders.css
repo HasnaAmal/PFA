@@ -791,3 +791,9 @@ body {
         transform: translateY(20px);
     }
 }
+
+/* dark mode btn style*/
+#checkMe {
+  -webkit-appearance: none;
+}
+
