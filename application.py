@@ -287,7 +287,7 @@ def dashboard():
 
     db = get_db()
     user_id = session['user_id']
-
+    recent_files = get_recent_files(user_id, limit=5)
     file_count = db.execute("SELECT COUNT(*) FROM files WHERE user_id = ?", (user_id,)).fetchone()[0]
     folder_count = db.execute("SELECT COUNT(*) FROM folders WHERE user_id = ?", (user_id,)).fetchone()[0]
     reminder_count = db.execute("SELECT COUNT(*) FROM reminders WHERE user_id = ?", (user_id,)).fetchone()[0]
@@ -316,7 +316,41 @@ def dashboard():
                            reminder_count=reminder_count,
                            reminders=reminders,
                            notifications=notifications,
-                           notif_count=notif_count)
+                           notif_count=notif_count,
+                           recent_files=recent_files)
+def get_recent_files(user_id=None, limit=5):
+    conn = get_db()
+    cursor = conn.cursor()
+
+    if user_id:
+        cursor.execute("""
+            SELECT name, size, created_at 
+            FROM files 
+            WHERE user_id = ?
+            ORDER BY created_at DESC 
+            LIMIT ?
+        """, (user_id, limit))
+    else:
+        cursor.execute("""
+            SELECT name, size, created_at 
+            FROM files 
+            ORDER BY created_at DESC 
+            LIMIT ?
+        """, (limit,))
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    # Formatter les résultats
+    recent_files = []
+    for name, size, created_at in rows:
+        recent_files.append({
+            "name": name,
+            "size": f"{round(size / 1024)} Ko",  # taille formatée en Ko
+            "date": created_at.split(" ")[0]     # afficher seulement la date
+        })
+
+    return recent_files
 @app.route('/')
 def home():
     return "App is running with scheduled reminder sender!"
