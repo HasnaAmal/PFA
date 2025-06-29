@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title class="notranslate">{% block title %}Arkivo - Dashboard{% endblock %}</title>
+    <title class="notranslate">{% block title %}Arkivo{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@100..900&display=swap" rel="stylesheet">
@@ -93,12 +93,21 @@
 
         <div id="google_translate_element"></div>
         <div class="sidebar-footer">
-            <a href="{{ url_for('logout') }}" class="logout-btn">
-                <i class="fas fa-sign-out-alt"></i>
-                <span class="logout-text">Déconnexion</span>
-            </a>
+            <a href="#" id="logoutBtn" data-logout-url="{{ url_for('logout') }}" class="logout-btn">
+  <i class="fas fa-sign-out-alt"></i>
+  <span class="logout-text">Déconnexion</span>
+</a>
         </div>
-        
+    </aside>
+    <!-- Modal simple (tu peux styliser comme tu veux) -->
+    <div id="logoutModal" class="modallogout" style="display:none;">
+  <div class="modal-contentlogout">
+    <p>Êtes-vous sûr de vouloir vous déconnecter ?</p>
+    <button id="confirmLogoutBtn">Oui, déconnecter</button>
+    <button id="cancelLogoutBtn">Annuler</button>
+  </div>
+</div>
+
     </aside>
     <main class="dashboard-main" id="main">
         <!-- Welcome Section -->
@@ -116,7 +125,7 @@
                         <p>{{ session.user_email }}</p>
                     </div>
 
-                    <div class="notification-icon" title="Notifications" id="notifToggle" >
+                    <div class="notification-icon" title="Notifications" id="notifToggle">
                         <i class="fas fa-bell"></i>
                         {% if notif_count > 0 %}
                         <span class="badge" id="notifCount">{{ notif_count }}</span>
@@ -281,50 +290,34 @@
             li.innerHTML = `<strong>${notif.type.toUpperCase()}:</strong> ${notif.message}`;
             notifListElem.appendChild(li);
         });
-  function fetchNotifications() {
-    fetch('/api/notifications')
-        .then(response => response.json())
-        .then(data => {
-            const notifCountElem = document.getElementById('notifCount');
-            const notifListElem = document.querySelector('.notification-dropdown ul');
+        function fetchNotifications() {
+            fetch('/api/notifications')
+                .then(response => response.json())
+                .then(data => {
+                    const notifCountElem = document.getElementById('notifCount');
+                    const notifListElem = document.querySelector('.notification-dropdown ul');
 
-            if (!Array.isArray(data)) {
-                notifCountElem.style.display = 'none';
-                notifListElem.innerHTML = '<li>Non connecté.</li>';
-                return;
-            }
+                    if (!Array.isArray(data)) {
+                        return; // Not logged in or error
+                    }
 
-            if (data.length > 0) {
-                notifCountElem.style.display = 'inline-block';
-                notifCountElem.textContent = data.length;
+                    if (data.length > 0) {
+                        notifCountElem.style.display = 'inline-block';
+                        notifCountElem.textContent = data.length;
 
-                notifListElem.innerHTML = '';
-                data.forEach(notif => {
-                    const li = document.createElement('li');
-                    li.textContent = notif.message;
-                    notifListElem.appendChild(li);
-                });
-            } else {
-                notifCountElem.style.display = 'none';
-                notifListElem.innerHTML = '<li>Aucune notification pour le moment.</li>';
-            }
-
-            // 👇 Marquer comme lues manuellement si nécessaire (ex. après affichage)
-            fetch('/api/notifications/read', {
-                method: 'POST'
-            }).then(res => res.json())
-              .then(result => {
-                  if (result.success) {
-                      console.log("✅ Notifications marquées comme lues.");
-                  }
-              });
-
-        })
-        .catch(err => {
-            console.error('Erreur de chargement des notifications :', err);
-        });
-}
-
+                        notifListElem.innerHTML = '';
+                        data.forEach(notif => {
+                            const li = document.createElement('li');
+                            li.textContent = notif.message;
+                            notifListElem.appendChild(li);
+                        });
+                    } else {
+                        notifCountElem.style.display = 'none';
+                        notifListElem.innerHTML = '<li>Aucune notification pour le moment.</li>';
+                    }
+                })
+                .catch(console.error);
+        }
 
         notifToggle.addEventListener('click', function (e) {
             e.stopPropagation();
@@ -375,6 +368,7 @@
         </div>
     </div>
     <script src="{{ url_for('static', filename='js/DashboardDarkMode.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/logout.js') }}"></script>
 </body>
 
 </html>
