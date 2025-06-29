@@ -11,46 +11,46 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/folder.css') }}" />
-     <style>
-    /* Clean look */
-    button {
-      padding: 8px 12px;
-      margin: 10px;
-      cursor: pointer;
-    }
+    <style>
+        /* Clean look */
+        button {
+            padding: 8px 12px;
+            margin: 10px;
+            cursor: pointer;
+        }
 
-    .language-buttons {
-      position: absolute;
-      left: 0;
-    }
+        .language-buttons {
+            position: absolute;
+            left: 0;
+        }
 
-    /* Hide Google stuff */
-    iframe.goog-te-banner-frame {
-      display: none !important;
-    }
+        /* Hide Google stuff */
+        iframe.goog-te-banner-frame {
+            display: none !important;
+        }
 
-    body {
-      top: 0px !important;
-      position: static !important;
-    }
+        body {
+            top: 0px !important;
+            position: static !important;
+        }
 
-    .goog-logo-link,
-    .goog-te-gadget,
-    .goog-te-banner-frame,
-    #goog-gt-tt,
-    .goog-te-balloon-frame,
-    .goog-te-menu-value {
-      display: none !important;
-    }
+        .goog-logo-link,
+        .goog-te-gadget,
+        .goog-te-banner-frame,
+        #goog-gt-tt,
+        .goog-te-balloon-frame,
+        .goog-te-menu-value {
+            display: none !important;
+        }
 
-    #google_translate_element {
-      display: none !important;
-    }
+        #google_translate_element {
+            display: none !important;
+        }
 
-    .skiptranslate {
-      display: none !important;
-    }
-  </style>
+        .skiptranslate {
+            display: none !important;
+        }
+    </style>
 
     {% block styles %}{% endblock %}
 </head>
@@ -139,10 +139,11 @@
                 <h2><i class="fas fa-folder"></i> Mes Dossiers</h2>
                 <span class="count-badge">{{ folders|length }} dossier(s)</span>
             </div>
-<div class="search-bar">
-  <input type="text" id="searchInput" placeholder="Rechercher un dossier..." onkeyup="filterItems()" style="padding-left: 2.2rem;">
-  <i class="fas fa-search"></i>
-</div>
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Rechercher un dossier..." onkeyup="filterItems()"
+                    style="padding-left: 2.2rem;">
+                <i class="fas fa-search"></i>
+            </div>
             <div class="folders-grid">
                 {% if folders %}
                 {% for folder in folders %}
@@ -366,92 +367,94 @@
             uploadFolderIdInput.value = folderId;
 
             fetch(`/api/folder_files/${folderId}`)
-                .then(response => response.json())
-                .then(data => {
-                    modalFolderName.textContent = data.folder_name || 'Dossier';
-                    filesList.innerHTML = '';
+    .then(response => response.json())
+    .then(data => {
+        modalFolderName.textContent = data.folder_name || 'Dossier';
+        filesList.innerHTML = '';
 
-                    if (!data.files || data.files.length === 0) {
-    filesList.innerHTML = '<div class="empty-files-message">Aucun fichier dans ce dossier.</div>';
-    return;
+        if (!data.files || data.files.length === 0) {
+            filesList.innerHTML = '<div class="empty-files-message">Aucun fichier dans ce dossier.</div>';
+            return;
+        }
 
-                    data.files.forEach(file => {
-                        const card = document.createElement('div');
-                        card.className = 'file-card';
+        data.files.forEach(file => {
+            const card = document.createElement('div');
+            card.className = 'file-card';
 
-                        const preview = document.createElement('div');
-                        preview.className = 'file-preview';
+            const preview = document.createElement('div');
+            preview.className = 'file-preview';
 
-                        const isImage = /\.(jpe?g|png|gif|webp)$/i.test(file.name);
-                        const isPDF = /\.pdf$/i.test(file.name);
+            const isImage = /\.(jpe?g|png|gif|webp)$/i.test(file.name);
+            const isPDF = /\.pdf$/i.test(file.name);
 
-                        if (isImage) {
-                            preview.innerHTML = `<img src="/uploads/${encodeURIComponent(file.name)}" alt="Aperçu" />`;
-                        } else if (isPDF) {
-                            preview.innerHTML = `<img src="/static/img/pdf-icon.png" alt="PDF" style="width: 80px; height: 80px;" />`;
-                        } else {
-                            preview.innerHTML = `<i class="fas fa-file-alt fa-3x" style="color:#689f38;"></i>`;
-                        }
+            if (isImage) {
+                preview.innerHTML = `<img src="/uploads/${encodeURIComponent(file.name)}" alt="Aperçu" />`;
+            } else if (isPDF) {
+                preview.innerHTML = `<img src="/static/img/pdf-icon.png" alt="PDF" style="width: 80px; height: 80px;" />`;
+            } else {
+                preview.innerHTML = `<i class="fas fa-file-alt fa-3x" style="color:#689f38;"></i>`;
+            }
 
-                        const title = document.createElement('div');
-                        title.className = 'file-title';
-                        title.textContent = file.name;
+            const title = document.createElement('div');
+            title.className = 'file-title';
+            title.textContent = file.name;
 
-                        const actions = document.createElement('div');
-                        actions.className = 'file-actions';
+            const actions = document.createElement('div');
+            actions.className = 'file-actions';
 
-                        const downloadForm = document.createElement('form');
-                        downloadForm.method = 'GET';
-                        downloadForm.action = `/uploads/${encodeURIComponent(file.name)}`;
-                        downloadForm.innerHTML = `<button type="submit" class="file-btn download" title="Télécharger"><i class="fas fa-download"></i></button>`;
+            const downloadForm = document.createElement('form');
+            downloadForm.method = 'GET';
+            downloadForm.action = `/uploads/${encodeURIComponent(file.name)}`;
+            downloadForm.innerHTML = `<button type="submit" class="file-btn download" title="Télécharger"><i class="fas fa-download"></i></button>`;
 
-                        const deleteForm = document.createElement('form');
-                        deleteForm.method = 'POST';  // 🔴 essentiel
-                        deleteForm.action = `/delete_file/${file.id}`;
-                        deleteForm.onsubmit = function (e) {
-                            if (!confirm(`Supprimer le fichier "${file.name}" ?`)) {
-                                e.preventDefault();
-                            }
-                        };
+            const deleteForm = document.createElement('form');
+            deleteForm.method = 'POST';
+            deleteForm.action = `/delete_file/${file.id}`;
+            deleteForm.onsubmit = function (e) {
+                if (!confirm(`Supprimer le fichier "${file.name}" ?`)) {
+                    e.preventDefault();
+                }
+            };
 
-                        deleteForm.innerHTML = `
-  <button type="submit" class="file-btn delete" title="Supprimer">
-    <i class="fas fa-trash"></i>
-  </button>`;
+            deleteForm.innerHTML = `
+                <button type="submit" class="file-btn delete" title="Supprimer">
+                    <i class="fas fa-trash"></i>
+                </button>`;
 
-                        actions.appendChild(downloadForm);
-                        actions.appendChild(deleteForm);
+            actions.appendChild(downloadForm);
+            actions.appendChild(deleteForm);
 
-                        card.appendChild(preview);
-                        card.appendChild(title);
-                        card.appendChild(actions);
-                        filesList.appendChild(card);
-                    });
-                })
-                .catch(() => {
-                    filesList.innerHTML = '<p class="error">Erreur de chargement.</p>';
-                    modalFolderName.textContent = 'Erreur';
-                });
+            card.appendChild(preview);
+            card.appendChild(title);
+            card.appendChild(actions);
+            filesList.appendChild(card);
+        });
+    })
+    .catch(() => {
+        filesList.innerHTML = '<p class="error">Erreur de chargement.</p>';
+        modalFolderName.textContent = 'Erreur';
+    });
+
         }
 
         function closeModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
         }
-function filterItems() {
-    const input = document.getElementById('searchInput').value.toLowerCase();
-    const folderCards = document.querySelectorAll('.folder-card');
-    
-    folderCards.forEach(card => {
-        const folderName = card.querySelector('h3').textContent.toLowerCase();
-        const fileInfo = card.querySelector('p').textContent.toLowerCase();
-        
-        if (folderName.includes(input) || fileInfo.includes(input)) {
-            card.style.display = "flex";
-        } else {
-            card.style.display = "none";
+        function filterItems() {
+            const input = document.getElementById('searchInput').value.toLowerCase();
+            const folderCards = document.querySelectorAll('.folder-card');
+
+            folderCards.forEach(card => {
+                const folderName = card.querySelector('h3').textContent.toLowerCase();
+                const fileInfo = card.querySelector('p').textContent.toLowerCase();
+
+                if (folderName.includes(input) || fileInfo.includes(input)) {
+                    card.style.display = "flex";
+                } else {
+                    card.style.display = "none";
+                }
+            });
         }
-    });
-}
     </script>
     <script src="{{ url_for('static', filename='js/translator.js')}}"></script>
     <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
