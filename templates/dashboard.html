@@ -116,7 +116,7 @@
                         <p>{{ session.user_email }}</p>
                     </div>
 
-                    <div class="notification-icon" title="Notifications" id="notifToggle">
+                    <div class="notification-icon" title="Notifications" id="notifToggle" >
                         <i class="fas fa-bell"></i>
                         {% if notif_count > 0 %}
                         <span class="badge" id="notifCount">{{ notif_count }}</span>
@@ -281,34 +281,50 @@
             li.innerHTML = `<strong>${notif.type.toUpperCase()}:</strong> ${notif.message}`;
             notifListElem.appendChild(li);
         });
-        function fetchNotifications() {
-            fetch('/api/notifications')
-                .then(response => response.json())
-                .then(data => {
-                    const notifCountElem = document.getElementById('notifCount');
-                    const notifListElem = document.querySelector('.notification-dropdown ul');
+  function fetchNotifications() {
+    fetch('/api/notifications')
+        .then(response => response.json())
+        .then(data => {
+            const notifCountElem = document.getElementById('notifCount');
+            const notifListElem = document.querySelector('.notification-dropdown ul');
 
-                    if (!Array.isArray(data)) {
-                        return; // Not logged in or error
-                    }
+            if (!Array.isArray(data)) {
+                notifCountElem.style.display = 'none';
+                notifListElem.innerHTML = '<li>Non connecté.</li>';
+                return;
+            }
 
-                    if (data.length > 0) {
-                        notifCountElem.style.display = 'inline-block';
-                        notifCountElem.textContent = data.length;
+            if (data.length > 0) {
+                notifCountElem.style.display = 'inline-block';
+                notifCountElem.textContent = data.length;
 
-                        notifListElem.innerHTML = '';
-                        data.forEach(notif => {
-                            const li = document.createElement('li');
-                            li.textContent = notif.message;
-                            notifListElem.appendChild(li);
-                        });
-                    } else {
-                        notifCountElem.style.display = 'none';
-                        notifListElem.innerHTML = '<li>Aucune notification pour le moment.</li>';
-                    }
-                })
-                .catch(console.error);
-        }
+                notifListElem.innerHTML = '';
+                data.forEach(notif => {
+                    const li = document.createElement('li');
+                    li.textContent = notif.message;
+                    notifListElem.appendChild(li);
+                });
+            } else {
+                notifCountElem.style.display = 'none';
+                notifListElem.innerHTML = '<li>Aucune notification pour le moment.</li>';
+            }
+
+            // 👇 Marquer comme lues manuellement si nécessaire (ex. après affichage)
+            fetch('/api/notifications/read', {
+                method: 'POST'
+            }).then(res => res.json())
+              .then(result => {
+                  if (result.success) {
+                      console.log("✅ Notifications marquées comme lues.");
+                  }
+              });
+
+        })
+        .catch(err => {
+            console.error('Erreur de chargement des notifications :', err);
+        });
+}
+
 
         notifToggle.addEventListener('click', function (e) {
             e.stopPropagation();

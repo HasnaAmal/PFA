@@ -369,6 +369,7 @@
             fetch(`/api/folder_files/${folderId}`)
                 .then(response => response.json())
                 .then(data => {
+                console.log('Files data:', data); 
         modalFolderName.textContent = data.folder_name || 'Dossier';
         filesList.innerHTML = '';
 
