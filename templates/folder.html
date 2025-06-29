@@ -163,9 +163,19 @@
                     </div>
                     <div class="folder-info">
                         <h3>{{ folder.name }}</h3>
+                        <form action="/Rename_Folder" method="POST" style="display: inline;"
+                            onclick="event.stopPropagation();">
+                            <input type="text" class="Newname" name="changeName" placeholder="Rename">
+                            <input type="hidden" name="THEuserName" value="{{ folder.name }}">
+                            <input type="hidden" name="THEuserId" value="{{ folder.id }}">
+                        </form>
                         <p>{{ folder.file_count or 0 }} fichier(s)</p>
                     </div>
                     <div class="folder-actions">
+                        <button class="action-btn edit-btn" title="Rename"
+                            onclick="event.stopPropagation();displayinput(this);">
+                            <i class="fas fa-pencil"></i>
+                        </button>
                         <button class="action-btn" title="Ouvrir le dossier"
                             onclick="event.stopPropagation(); openFilesModal({{ folder.id }})">
                             <i class="fas fa-folder-open"></i>
@@ -258,6 +268,8 @@
     {% endwith %}
     <script src="{{ url_for('static', filename='js/FolderDarkMode.js') }}"></script>
     <script>
+        let open = true;
+        
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const main = document.getElementById('main');
@@ -465,7 +477,27 @@
                 }
             });
         }
-       
+         //RenameFolder
+        function displayinput(button) {
+        
+            const container = button.closest('.folder-card');
+            const user = container.querySelector('.the_user_name');
+            const input = container.querySelector('.Newname');
+
+            if (open) {
+                input.style.display = 'block';
+                user.style.display = 'none';
+                open = false
+            }
+            else {
+                input.style.display = 'none';
+                user.style.display = 'block';
+                container.querySelector('.Newname').value = "";
+                open = true
+            }
+        }
+
+
     </script>
     <script src="{{ url_for('static', filename='js/translator.js')}}"></script>
     <script src="{{ url_for('static', filename='js/logout.js') }}"></script>

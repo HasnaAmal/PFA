@@ -96,6 +96,11 @@ body {
     background-color: var(--white);
     color: var(--sage-darker);
 }
+.sidebarDrakModeclr:hover,
+.sidebarDrakModeclr.active{
+    background-color: black !important;
+    color: white !important;
+}
 .sidebar-nav i {
     font-size: 1.1rem;
 }
@@ -805,6 +810,14 @@ body {
         transform: translateY(20px);
     }
 }
+
+
+/* dark mode btn style*/
+#checkMe {
+  -webkit-appearance: none;
+}
+
+=======
 /* Fond semi-transparent */
 .modallogout {
   position: fixed;
@@ -879,3 +892,4 @@ body {
     transform: translateY(0);
   }
 }
+
