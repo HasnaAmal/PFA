@@ -46,11 +46,20 @@
         </nav>
 
         <div class="sidebar-footer">
-            <a href="{{ url_for('logout') }}" class="logout-btn">
-                <i class="fas fa-sign-out-alt"></i>
-                <span class="logout-text">Déconnexion</span>
-            </a>
+            <a href="#" id="logoutBtn" data-logout-url="{{ url_for('logout') }}" class="logout-btn">
+  <i class="fas fa-sign-out-alt"></i>
+  <span class="logout-text">Déconnexion</span>
+</a>
         </div>
+    </aside>
+    <!-- Modal simple (tu peux styliser comme tu veux) -->
+    <div id="logoutModal" class="modallogout" style="display:none;">
+  <div class="modal-contentlogout">
+    <p>Êtes-vous sûr de vouloir vous déconnecter ?</p>
+    <button id="confirmLogoutBtn">Oui, déconnecter</button>
+    <button id="cancelLogoutBtn">Annuler</button>
+  </div>
+</div>
     </aside>
 
     <main class="dashboard-main" id="main">
@@ -362,6 +371,7 @@
             }
         }
     </script>
+    <script src="{{ url_for('static', filename='js/logout.js') }}"></script>
 </body>
 
 </html>
