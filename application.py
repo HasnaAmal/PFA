@@ -988,29 +988,42 @@ def send_email_reminder(to_email, subject, content):
         print(f"Error sending email to {to_email}: {e}")
 
 import atexit
-def send_due_reminders(job=None):
+# ------------------- Reminder Logic -------------------
+def send_due_reminders(user_id=None):
     print(f"[{datetime.now()}] Checking reminders...")
-    db = get_db()
-    now = datetime.now()
+    with app.app_context():
+        db = get_db()
+        now = datetime.now()
 
-    reminders = db.execute('''
-        SELECT * FROM reminders
-        WHERE email_sent = 0
-    ''').fetchall()
+        if user_id:
+            reminders = db.execute('SELECT * FROM reminders WHERE email_sent = 0 AND user_id = ?', (user_id,)).fetchall()
+        else:
+            reminders = db.execute('SELECT * FROM reminders WHERE email_sent = 0').fetchall()
 
-    for reminder in reminders:
-        due_date = datetime.strptime(reminder['due_date'], '%Y-%m-%d %H:%M:%S')
-        if due_date <= now:
-            user = db.execute('SELECT email FROM users WHERE id = ?', (reminder['user_id'],)).fetchone()
-            if user and user['email']:
-                send_email_reminder(
-                    user['email'],
-                    f"Reminder: {reminder['title']}",
-                    f"Votre rappel '{reminder['title']}' est prévu pour le {reminder['due_date']}."
-                )
-                db.execute('UPDATE reminders SET email_sent = 1 WHERE id = ?', (reminder['id'],))
-                db.commit()
-    print(f"[{datetime.now()}] Reminders processed.")
+        print(f"📌 {len(reminders)} rappels trouvés à vérifier.")
+
+        for reminder in reminders:
+            print(f"⏰ Vérif du rappel : '{reminder['title']}', prévu pour {reminder['due_date']}, email_sent = {reminder['email_sent']}")
+
+            due_date = datetime.strptime(reminder['due_date'], '%Y-%m-%d %H:%M:%S')
+            if due_date <= now:
+                user = db.execute('SELECT email FROM users WHERE id = ?', (reminder['user_id'],)).fetchone()
+                if user and user['email']:
+                    print(f"📤 Envoi email à {user['email']} pour le rappel '{reminder['title']}' prévu le {reminder['due_date']}")
+                    response = send_email(
+                        subject=f"Reminder: {reminder['title']}",
+                        html_content=f"Votre rappel '{reminder['title']}' est prévu pour le {reminder['due_date']}.",
+                        to_email=user['email']
+                    )
+                    if response and response.status_code in [200, 201]:
+                        db.execute('UPDATE reminders SET email_sent = 1 WHERE id = ?', (reminder['id'],))
+                        db.commit()
+                    else:
+                        print(f"❌ Erreur lors de l'envoi du rappel id {reminder['id']}")
+        print(f"[{datetime.now()}] Reminders processed.")
+
+
+
 from apscheduler.schedulers.background import BackgroundScheduler
 
 scheduler = BackgroundScheduler()
