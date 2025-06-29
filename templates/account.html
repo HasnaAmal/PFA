@@ -82,13 +82,14 @@
     </div>
   </aside>
 <!-- Modal simple (tu peux styliser comme tu veux) -->
-<div id="logoutModal" class="modal" style="display:none;">
-  <div class="modal-content">
+<div id="logoutModal" class="modallogout" style="display:none;">
+  <div class="modal-contentlogout">
     <p>Êtes-vous sûr de vouloir vous déconnecter ?</p>
     <button id="confirmLogoutBtn">Oui, déconnecter</button>
     <button id="cancelLogoutBtn">Annuler</button>
   </div>
 </div>
+
 
   <main class="dashboard-main" id="main">
   
@@ -279,21 +280,11 @@
         modal.style.display = 'none';
       }
     });
-document.getElementById('logoutBtn').addEventListener('click', function(e) {
-  e.preventDefault();
-  document.getElementById('logoutModal').style.display = 'block';
-});
 
-document.getElementById('confirmLogoutBtn').addEventListener('click', function() {
-  window.location.href = "{{ url_for('logout') }}";
-});
-
-document.getElementById('cancelLogoutBtn').addEventListener('click', function() {
-  document.getElementById('logoutModal').style.display = 'none';
-});
 
   </script>
   <script src="{{ url_for('static', filename='js/translator.js')}}"></script>
+  <script src="{{ url_for('static', filename='js/logout.js') }}"></script>
   <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </body>
 
