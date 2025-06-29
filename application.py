@@ -47,7 +47,7 @@ def scheduled_send_reminders():
 scheduler.add_job(scheduled_send_reminders, 'interval', minutes=5)
 scheduler.start()
 BREVO_API_KEY = os.getenv("BREVO_API_KEY")
-SENDER_EMAIL = "akramououissal@gmail.com"  # تأكدي يكون مفعل فـ Brevo
+SENDER_EMAIL = "akramoufadila@gmail.com"  # تأكدي يكون مفعل فـ Brevo
 SENDER_NAME = "arkivo"
 
 def send_email(subject, html_content, to_email, to_name="Utilisateur"):
@@ -245,11 +245,16 @@ def reset_password():
         flash("Lien invalide ou expiré.", "error")
         conn.close()
         return redirect('/')
-def add_notification(db, user_id, message, type, related_id, created_at):
-    db.execute('''
-        INSERT INTO notifications (user_id, message, type, related_id, is_read, created_at)
-        VALUES (?, ?, ?, ?, 0, ?)
-    ''', (user_id, message, type, related_id, created_at))
+def add_notification(db, user_id, message, type, related_id=None, created_at=None):
+    if created_at is None:
+        created_at = datetime.now()
+
+    cursor = db.cursor()
+    cursor.execute("""
+        INSERT INTO notifications (user_id, message, type, related_id, created_at)
+        VALUES (?, ?, ?, ?, ?)
+    """, (user_id, message, type, related_id, created_at))
+    db.commit()
 @app.route('/api/notifications')
 def get_notifications():
     if 'user_id' not in session:
