@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}Arkivo{% endblock %}</title>
+    <title class="notranslate">{% block title %}Arkivo{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@100..900&display=swap" rel="stylesheet">
@@ -77,31 +77,32 @@
                             class="link-text">Profil</span></a></li>
             </ul>
         </nav>
+ <!---------------------------------------------------------------------------------------->
+        <div class="drakmodebtn">
+            <input type="checkbox" title="Dark mode" id="checkMe" class="checkMe">
+        </div>
+        <!------------------------------------------------------------------------------------------->
+        <!---------------------------------------------------------------------->
+       <div class="language-buttons">
+        <select name="" id="selectLang" class="notranslate language-select"  onchange="changeLanguage(this)">
+          <option value="en" class="notranslate">English</option>
+          <option value="ar" class="notranslate">العربية</option>
+          <option value="fr" class="notranslate">Français</option>
+        </select>
+      </div>
 
+        <div id="google_translate_element"></div>
         <div class="sidebar-footer">
             <a href="{{ url_for('logout') }}" class="logout-btn">
                 <i class="fas fa-sign-out-alt"></i>
                 <span class="logout-text">Déconnexion</span>
             </a>
         </div>
+        
     </aside>
     <main class="dashboard-main" id="main">
         <!-- Welcome Section -->
-        <!---------------------------------------------------------------------------------------->
-        <div class="drakmodebtn">
-            <input type="checkbox" title="Dark mode" id="checkMe" class="checkMe">
-        </div>
-        <!------------------------------------------------------------------------------------------->
-        <!---------------------------------------------------------------------->
-        <div class="language-buttons">
-            <select name="" id="selectLang" onchange="changeLanguage(this)">
-                <option value="en">English</option>
-                <option value="ar">العربية</option>
-                <option value="fr">default</option>
-            </select>
-        </div>
-
-        <div id="google_translate_element"></div>
+       
         <!------------------------------------------------------------------------------------>
         <section class="welcome-section fade-in">
             <div class="welcome-card">
