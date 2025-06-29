@@ -4,53 +4,53 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}Arkivo - Dossiers{% endblock %}</title>
+    <title class="notranslate">{% block title %}Arkivo - Dossiers{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@100..900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/folder.css') }}" />
-     <style>
-    /* Clean look */
-    button {
-      padding: 8px 12px;
-      margin: 10px;
-      cursor: pointer;
-    }
+    <style>
+        /* Clean look */
+        button {
+            padding: 8px 12px;
+            margin: 10px;
+            cursor: pointer;
+        }
 
-    .language-buttons {
-      position: absolute;
-      left: 0;
-    }
+        .language-buttons {
+            position: absolute;
+            left: 0;
+        }
 
-    /* Hide Google stuff */
-    iframe.goog-te-banner-frame {
-      display: none !important;
-    }
+        /* Hide Google stuff */
+        iframe.goog-te-banner-frame {
+            display: none !important;
+        }
 
-    body {
-      top: 0px !important;
-      position: static !important;
-    }
+        body {
+            top: 0px !important;
+            position: static !important;
+        }
 
-    .goog-logo-link,
-    .goog-te-gadget,
-    .goog-te-banner-frame,
-    #goog-gt-tt,
-    .goog-te-balloon-frame,
-    .goog-te-menu-value {
-      display: none !important;
-    }
+        .goog-logo-link,
+        .goog-te-gadget,
+        .goog-te-banner-frame,
+        #goog-gt-tt,
+        .goog-te-balloon-frame,
+        .goog-te-menu-value {
+            display: none !important;
+        }
 
-    #google_translate_element {
-      display: none !important;
-    }
+        #google_translate_element {
+            display: none !important;
+        }
 
-    .skiptranslate {
-      display: none !important;
-    }
-  </style>
+        .skiptranslate {
+            display: none !important;
+        }
+    </style>
 
     {% block styles %}{% endblock %}
 </head>
@@ -60,7 +60,7 @@
     <!-- Sidebar Navigation -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <h1 class="logo">Arkivo</h1>
+            <h1 class="logo notranslate">Arkivo</h1>
             <button class="toggle-btn" onclick="toggleSidebar()">
                 <i class="fas fa-chevron-left" id="toggleIcon"></i>
             </button>
@@ -80,12 +80,22 @@
         </nav>
 
         <div class="sidebar-footer">
-            <a href="{{ url_for('logout') }}" class="logout-btn">
-                <i class="fas fa-sign-out-alt"></i>
-                <span class="logout-text">Déconnexion</span>
-            </a>
+            <a href="#" id="logoutBtn" data-logout-url="{{ url_for('logout') }}" class="logout-btn">
+  <i class="fas fa-sign-out-alt"></i>
+  <span class="logout-text">Déconnexion</span>
+</a>
         </div>
     </aside>
+    <!-- Modal simple (tu peux styliser comme tu veux) -->
+    <div id="logoutModal" class="modallogout" style="display:none;">
+  <div class="modal-contentlogout">
+    <p>Êtes-vous sûr de vouloir vous déconnecter ?</p>
+    <button id="confirmLogoutBtn">Oui, déconnecter</button>
+    <button id="cancelLogoutBtn">Annuler</button>
+  </div>
+</div>
+
+
     <!-- Main Content -->
     <main class="dashboard-main" id="main">
         <!-------------------------------------------------------------------------------->
@@ -139,7 +149,11 @@
                 <h2><i class="fas fa-folder"></i> Mes Dossiers</h2>
                 <span class="count-badge">{{ folders|length }} dossier(s)</span>
             </div>
-
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Rechercher un dossier..." onkeyup="filterItems()"
+                    style="padding-left: 2.2rem;">
+                <i class="fas fa-search"></i>
+            </div>
             <div class="folders-grid">
                 {% if folders %}
                 {% for folder in folders %}
@@ -381,7 +395,7 @@
                     filesList.innerHTML = '';
 
                     if (!data.files || data.files.length === 0) {
-                        filesList.innerHTML = '<p>Aucun fichier dans ce dossier.</p>';
+                        filesList.innerHTML = '<div class="empty-files-message">Aucun fichier dans ce dossier.</div>';
                         return;
                     }
 
@@ -416,7 +430,7 @@
                         downloadForm.innerHTML = `<button type="submit" class="file-btn download" title="Télécharger"><i class="fas fa-download"></i></button>`;
 
                         const deleteForm = document.createElement('form');
-                        deleteForm.method = 'POST';  // 🔴 essentiel
+                        deleteForm.method = 'POST';
                         deleteForm.action = `/delete_file/${file.id}`;
                         deleteForm.onsubmit = function (e) {
                             if (!confirm(`Supprimer le fichier "${file.name}" ?`)) {
@@ -425,9 +439,9 @@
                         };
 
                         deleteForm.innerHTML = `
-  <button type="submit" class="file-btn delete" title="Supprimer">
-    <i class="fas fa-trash"></i>
-  </button>`;
+                <button type="submit" class="file-btn delete" title="Supprimer">
+                    <i class="fas fa-trash"></i>
+                </button>`;
 
                         actions.appendChild(downloadForm);
                         actions.appendChild(deleteForm);
@@ -442,12 +456,27 @@
                     filesList.innerHTML = '<p class="error">Erreur de chargement.</p>';
                     modalFolderName.textContent = 'Erreur';
                 });
+
         }
 
         function closeModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
         }
+        function filterItems() {
+            const input = document.getElementById('searchInput').value.toLowerCase();
+            const folderCards = document.querySelectorAll('.folder-card');
 
+            folderCards.forEach(card => {
+                const folderName = card.querySelector('h3').textContent.toLowerCase();
+                const fileInfo = card.querySelector('p').textContent.toLowerCase();
+
+                if (folderName.includes(input) || fileInfo.includes(input)) {
+                    card.style.display = "flex";
+                } else {
+                    card.style.display = "none";
+                }
+            });
+        }
          //RenameFolder
         function displayinput(button) {
         
@@ -468,8 +497,10 @@
             }
         }
 
+
     </script>
     <script src="{{ url_for('static', filename='js/translator.js')}}"></script>
+    <script src="{{ url_for('static', filename='js/logout.js') }}"></script>
     <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     <div id="uploadModal" class="modal">
         <div class="modal-content">

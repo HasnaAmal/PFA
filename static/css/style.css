@@ -1327,16 +1327,15 @@ footer button:hover {
 /* dark mode styling */
 .drakmodebtn {
     position: absolute;
-    width: 80px;
-    height: 40px;
-    right: 50px;
+    top:25px;
+    right: 90px;
 }
 
 .checkMe {
     -webkit-appearance: none;
     position: absolute;
     background-color: #f1f1f1;
-    width: 80px;
+    width: 60px;
     height: 30px;
     border-radius: 20px;
     box-shadow: var(--shadow-md);
@@ -1346,17 +1345,60 @@ footer button:hover {
 .checkMe::before {
     content: "";
     position: absolute;
-    height: 30px;
-    width: 30px;
+    height: 28px;
+    width: 28px;
     left: 0;
     background-color: var(--dark);
-    border-radius: 20px;
-    transform: scale(1.2);
+    border-radius: 50%;
     transition: 0.7s ease;
     box-shadow: var(--shadow-md);
 }
 
 .checkMe:checked::before {
-    background-color: var(--primary-light);
-    left: 52px;
+    background-color: var(--sage-darker);
+    left: 32px;
+    top:1px
 }
+.password-wrapper {
+  position: relative;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #888;
+}
+.notranslate {
+  translate: none;
+}
+.language-buttons {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.8rem;
+}
+
+.language-select {
+  appearance: none;
+  font-family: "Kumbh Sans", sans-serif;
+  background-color: #ffffffb7;
+  color: #181717;
+  font-size: 0.8rem;
+  font-weight:500 ;
+  padding: 0.3em 0.4em 0.2em 0.5em;
+  border: 1px solid #ccc;
+  border-radius: 40px;
+  margin-left: 2px;
+  cursor: pointer;
+  background-size: 1em;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.language-select:focus {
+  outline: none;
+  border-color: var(--sage-darker);
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.3);
+}
+

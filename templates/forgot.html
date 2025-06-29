@@ -4,8 +4,12 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Arkivo | Portefeuille digital</title>
+    <meta name="google" content="notranslate">
+    <title class="notranslate">Arkivo | Portefeuille digital</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
@@ -216,7 +220,7 @@
     <!-- Header -->
     <header>
         <div class="header-content">
-            <h1 class="logo">Arkivo</h1>
+            <h1 class="logo notranslate">Arkivo</h1>
             <nav>
                 <ul>
                     <li><a href="{{ url_for('index') }}" data-scroll="hero">Accueil</a></li>
@@ -231,10 +235,10 @@
             </div>
             <!---------------------------------------------------------------------->
             <div class="language-buttons">
-                <select name="" id="selectLang" onchange="changeLanguage(this)">
-                    <option value="en">English</option>
-                    <option value="ar">العربية</option>
-                    <option value="fr">default</option>
+                <select name="" id="selectLang" class="notranslate language-select"  onchange="changeLanguage(this)">
+                  <option value="en" class="notranslate">English</option>
+                  <option value="ar" class="notranslate">العربية</option>
+                  <option value="fr" class="notranslate">Français</option>
                 </select>
             </div>
 
@@ -283,13 +287,3 @@
 </body>
 
 </html>
-
-
-
-
-<h2>Définir un nouveau mot de passe</h2>
-    <form method="POST">
-        <input type="hidden" name="token" value="{{ token }}">
-        <input type="password" name="password" placeholder="Nouveau mot de passe" required>
-        <button type="submit">Réinitialiser</button>
-    </form>

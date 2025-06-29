@@ -21,7 +21,7 @@ app = Flask(__name__)
 app.secret_key = 'secret_key_tres_forte'
 app.permanent_session_lifetime = timedelta(days=30)
 UPLOAD_FOLDER = 'static/uploads'
-app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'uploads')
+app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
 
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
@@ -47,7 +47,9 @@ def scheduled_send_reminders():
 scheduler.add_job(scheduled_send_reminders, 'interval', minutes=5)
 scheduler.start()
 BREVO_API_KEY = os.getenv("BREVO_API_KEY")
-SENDER_EMAIL = "akramououissal@gmail.com"  # تأكدي يكون مفعل فـ Brevo
+print(f"Clé API chargée : {BREVO_API_KEY is not None}")
+
+SENDER_EMAIL = "akramoufadila@gmail.com"  # تأكدي يكون مفعل فـ Brevo
 SENDER_NAME = "arkivo"
 
 def send_email(subject, html_content, to_email, to_name="Utilisateur"):
@@ -245,11 +247,16 @@ def reset_password():
         flash("Lien invalide ou expiré.", "error")
         conn.close()
         return redirect('/')
-def add_notification(db, user_id, message, type, related_id, created_at):
-    db.execute('''
-        INSERT INTO notifications (user_id, message, type, related_id, is_read, created_at)
-        VALUES (?, ?, ?, ?, 0, ?)
-    ''', (user_id, message, type, related_id, created_at))
+def add_notification(db, user_id, message, type, related_id=None, created_at=None):
+    if created_at is None:
+        created_at = datetime.now()
+
+    cursor = db.cursor()
+    cursor.execute("""
+        INSERT INTO notifications (user_id, message, type, related_id, created_at)
+        VALUES (?, ?, ?, ?, ?)
+    """, (user_id, message, type, related_id, created_at))
+    db.commit()
 @app.route('/api/notifications')
 def get_notifications():
     if 'user_id' not in session:
@@ -261,15 +268,12 @@ def get_notifications():
     notifications = db.execute('''
         SELECT id, message, type, related_id, is_read, created_at
         FROM notifications
-        WHERE user_id = ? AND is_read = 0
+        WHERE user_id = ?
         ORDER BY created_at DESC
     ''', (user_id,)).fetchall()
-
-    db.execute('UPDATE notifications SET is_read = 1 WHERE user_id = ? AND is_read = 0', (user_id,))
-    db.commit()
-
     notif_list = [dict(row) for row in notifications]
     return jsonify(notif_list)
+
 @app.route('/api/notifications/read', methods=['POST'])
 def mark_notifications_read():
     if 'user_id' not in session:
@@ -280,6 +284,7 @@ def mark_notifications_read():
     db.commit()
 
     return jsonify({'success': True})
+
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' not in session:
@@ -287,7 +292,7 @@ def dashboard():
 
     db = get_db()
     user_id = session['user_id']
-
+    recent_files = get_recent_files(user_id, limit=5)
     file_count = db.execute("SELECT COUNT(*) FROM files WHERE user_id = ?", (user_id,)).fetchone()[0]
     folder_count = db.execute("SELECT COUNT(*) FROM folders WHERE user_id = ?", (user_id,)).fetchone()[0]
     reminder_count = db.execute("SELECT COUNT(*) FROM reminders WHERE user_id = ?", (user_id,)).fetchone()[0]
@@ -316,7 +321,41 @@ def dashboard():
                            reminder_count=reminder_count,
                            reminders=reminders,
                            notifications=notifications,
-                           notif_count=notif_count)
+                           notif_count=notif_count,
+                           recent_files=recent_files)
+def get_recent_files(user_id=None, limit=5):
+    conn = get_db()
+    cursor = conn.cursor()
+
+    if user_id:
+        cursor.execute("""
+            SELECT name, size, created_at 
+            FROM files 
+            WHERE user_id = ?
+            ORDER BY created_at DESC 
+            LIMIT ?
+        """, (user_id, limit))
+    else:
+        cursor.execute("""
+            SELECT name, size, created_at 
+            FROM files 
+            ORDER BY created_at DESC 
+            LIMIT ?
+        """, (limit,))
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    # Formatter les résultats
+    recent_files = []
+    for name, size, created_at in rows:
+        recent_files.append({
+            "name": name,
+            "size": f"{round(size / 1024)} Ko",  # taille formatée en Ko
+            "date": created_at.split(" ")[0]     # afficher seulement la date
+        })
+
+    return recent_files
 @app.route('/')
 def home():
     return "App is running with scheduled reminder sender!"
@@ -476,30 +515,18 @@ def account():
     notif_count = db.execute('SELECT COUNT(*) FROM notifications WHERE user_id = ?', (user_id,)).fetchone()[0]
 
     return render_template('account.html', notifications=notifications, notif_count=notif_count)
-
 @app.route('/api/folder_files/<int:folder_id>')
-def get_folder_files(folder_id):
-    conn = sqlite3.connect('app.db')
-    cursor = conn.cursor()
-    
-    cursor.execute('''
-        SELECT f.name
-        FROM files f
-        JOIN folders d ON f.folder_id = d.id
-        WHERE d.id = ?
-    ''', (folder_id,))
-    
-    files = [{'name': row[0]} for row in cursor.fetchall()]
-    
-    # Récupérer le nom du dossier pour l'afficher dans la modale
-    cursor.execute('SELECT name FROM folders WHERE id = ?', (folder_id,))
-    folder_name = cursor.fetchone()
-    conn.close()
-    
-    return jsonify({
-        'folder_name': folder_name[0] if folder_name else 'Dossier inconnu',
-        'files': files
-    })
+def folder_files(folder_id):
+    user_id = session.get('user_id')
+    db = get_db()
+    files = db.execute('SELECT id, name FROM files WHERE folder_id = ? AND user_id = ?', (folder_id, user_id)).fetchall()
+
+    files_list = [{'id': f['id'], 'name': f['name']} for f in files]
+
+    folder = db.execute('SELECT name FROM folders WHERE id = ? AND user_id = ?', (folder_id, user_id)).fetchone()
+    folder_name = folder['name'] if folder else "Dossier"
+
+    return jsonify({'folder_name': folder_name, 'files': files_list})
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
@@ -510,9 +537,11 @@ import os
 
 @app.route('/download/<path:filename>')
 def download_file(filename):
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    if os.path.exists(file_path):
-        return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
+    safe_name = secure_filename(filename)
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], safe_name)
+
+    if os.path.isfile(file_path):
+        return send_from_directory(app.config['UPLOAD_FOLDER'], safe_name, as_attachment=True)
     else:
         abort(404)
 
@@ -537,7 +566,9 @@ def delete_file(file_id):
 
     db.execute('DELETE FROM files WHERE id = ?', (file_id,))
     db.commit()
+    flash("Fichier supprimé avec succès.", "success")
     return redirect(url_for('folders'))
+
 
 def get_or_create_folder(db, user_id, folder_name):
     folder = db.execute("SELECT id FROM folders WHERE user_id = ? AND name = ?", (user_id, folder_name)).fetchone()
@@ -610,8 +641,6 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 UPLOAD_FOLDER = os.path.join(basedir, 'static', 'uploads')
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
-
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 def preprocess_image(image):
     # تحويل لصورة رمادية
     image = image.convert('L')
@@ -705,55 +734,50 @@ def upload():
     if file.filename == '':
         flash('Nom de fichier invalide.', 'error')
         return redirect(url_for('files'))
-    original_filename = secure_filename(file.filename)
-    ext = os.path.splitext(original_filename)[1].lower()
 
-    # توليد اسم فريد لتفادي تعارض الملفات
-    unique_filename = f"{uuid.uuid4().hex}{ext}"
-    path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+    # Utilise le nom original sécurisé
+    filename = secure_filename(file.filename)
+    save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+    # Sauvegarde directe
+    file.save(save_path)
+    size = os.path.getsize(save_path)
+
+    # Extraction & classification
+    ext = os.path.splitext(filename)[1].lower()
     if ext == '.pdf':
-        file.save(path)
-        size = os.path.getsize(path)
-        text = extract_text_from_file(path)
-
+        text = extract_text_from_file(save_path)
     elif ext in ['.jpeg', '.jpg', '.png']:
-        file_bytes = file.read()
-        size = len(file_bytes)
-        file_stream = BytesIO(file_bytes)
-        text = extract_text_from_image_file(file_stream)
-
-        file.seek(0)
-        file.save(path)
-
+        with open(save_path, 'rb') as f:
+            file_stream = BytesIO(f.read())
+            text = extract_text_from_image_file(file_stream)
     else:
         flash('Format de fichier non supporté.', 'error')
         return redirect(url_for('files'))
-    category = classify_document(text, original_filename)
-    if not category:
-        category = 'non_catégorisé'
+
+    category = classify_document(text, filename) or 'non_catégorisé'
     category_norm = normalize(category)
+
     db = get_db()
     folders = db.execute("SELECT id, name FROM folders WHERE user_id = ?", (session['user_id'],)).fetchall()
 
     folder_id = None
     for folder in folders:
-        folder_name_norm = normalize(folder['name'])
-        if folder_name_norm == category_norm:
+        if normalize(folder['name']) == category_norm:
             folder_id = folder['id']
             category = folder['name']
             break
 
     if folder_id is None:
-        cursor = db.execute(
-            "INSERT INTO folders (name, user_id) VALUES (?, ?)",
-            (category, session['user_id'])
-        )
+        cursor = db.execute("INSERT INTO folders (name, user_id) VALUES (?, ?)", (category, session['user_id']))
         db.commit()
         folder_id = cursor.lastrowid
+
+    # Stocke le nom réel dans path
     db.execute('''
         INSERT INTO files (name, path, size, folder_id, user_id, category)
         VALUES (?, ?, ?, ?, ?, ?)
-    ''', (original_filename, path, size, folder_id, session['user_id'], category))
+    ''', (filename, filename, size, folder_id, session['user_id'], category))
     db.commit()
 
     flash(f'Fichier uploadé avec succès. Catégorie détectée : {category}', 'success')
@@ -886,8 +910,23 @@ def reminders():
         WHERE r.user_id = ?
         ORDER BY r.due_date ASC
     ''', (user_id,)).fetchall()
-    reminders = [dict(r) for r in reminders_rows]
-    files = db.execute('SELECT * FROM files WHERE user_id = ?', (session['user_id'],)).fetchall()
+
+    reminders = []
+    for r in reminders_rows:
+        reminder = dict(r)
+        # Parse due_date string to datetime object
+        try:
+            due_dt = datetime.strptime(reminder['due_date'], '%Y-%m-%d %H:%M:%S')
+            # Remplace le champ due_date par la date formatée (optionnel)
+            reminder['due_date'] = due_dt.strftime('%Y-%m-%d')  
+            # Ajoute un champ due_time au format 'HH:MM'
+            reminder['due_time'] = due_dt.strftime('%H:%M')
+        except Exception:
+            # Si erreur (ex: due_date null ou mauvais format), valeur vide
+            reminder['due_time'] = ''
+        reminders.append(reminder)
+
+    files = db.execute('SELECT * FROM files WHERE user_id = ?', (user_id,)).fetchall()
     notifications = db.execute('''
         SELECT * FROM notifications
         WHERE user_id = ?
@@ -963,29 +1002,42 @@ def send_email_reminder(to_email, subject, content):
         print(f"Error sending email to {to_email}: {e}")
 
 import atexit
-def send_due_reminders(job=None):
+# ------------------- Reminder Logic -------------------
+def send_due_reminders(user_id=None):
     print(f"[{datetime.now()}] Checking reminders...")
-    db = get_db()
-    now = datetime.now()
+    with app.app_context():
+        db = get_db()
+        now = datetime.now()
 
-    reminders = db.execute('''
-        SELECT * FROM reminders
-        WHERE email_sent = 0
-    ''').fetchall()
+        if user_id:
+            reminders = db.execute('SELECT * FROM reminders WHERE email_sent = 0 AND user_id = ?', (user_id,)).fetchall()
+        else:
+            reminders = db.execute('SELECT * FROM reminders WHERE email_sent = 0').fetchall()
 
-    for reminder in reminders:
-        due_date = datetime.strptime(reminder['due_date'], '%Y-%m-%d %H:%M:%S')
-        if due_date <= now:
-            user = db.execute('SELECT email FROM users WHERE id = ?', (reminder['user_id'],)).fetchone()
-            if user and user['email']:
-                send_email_reminder(
-                    user['email'],
-                    f"Reminder: {reminder['title']}",
-                    f"Votre rappel '{reminder['title']}' est prévu pour le {reminder['due_date']}."
-                )
-                db.execute('UPDATE reminders SET email_sent = 1 WHERE id = ?', (reminder['id'],))
-                db.commit()
-    print(f"[{datetime.now()}] Reminders processed.")
+        print(f"📌 {len(reminders)} rappels trouvés à vérifier.")
+
+        for reminder in reminders:
+            print(f"⏰ Vérif du rappel : '{reminder['title']}', prévu pour {reminder['due_date']}, email_sent = {reminder['email_sent']}")
+
+            due_date = datetime.strptime(reminder['due_date'], '%Y-%m-%d %H:%M:%S')
+            if due_date <= now:
+                user = db.execute('SELECT email FROM users WHERE id = ?', (reminder['user_id'],)).fetchone()
+                if user and user['email']:
+                    print(f"📤 Envoi email à {user['email']} pour le rappel '{reminder['title']}' prévu le {reminder['due_date']}")
+                    response = send_email(
+                        subject=f"Reminder: {reminder['title']}",
+                        html_content=f"Votre rappel '{reminder['title']}' est prévu pour le {reminder['due_date']}.",
+                        to_email=user['email']
+                    )
+                    if response and response.status_code in [200, 201]:
+                        db.execute('UPDATE reminders SET email_sent = 1 WHERE id = ?', (reminder['id'],))
+                        db.commit()
+                    else:
+                        print(f"❌ Erreur lors de l'envoi du rappel id {reminder['id']}")
+        print(f"[{datetime.now()}] Reminders processed.")
+
+
+
 from apscheduler.schedulers.background import BackgroundScheduler
 
 scheduler = BackgroundScheduler()
