@@ -40,9 +40,6 @@ body {
     flex-direction: column;
     justify-content: space-between;
     z-index: 1000;
-    border-right: solid 1px var(--sage-light);
-    border-bottom-right-radius: 0px;
-    border-top-right-radius: 0px;
     transition: var(--transition);
 }
 
@@ -108,7 +105,7 @@ body {
     font-size: 1.1rem;
 }
 .sidebar.collapsed .sidebar-nav a.active, .sidebar.collapsed .sidebar-nav a:hover {
-  width: 40px;
+  width: 50px;
   transition: all 0.3s ease;
 }
 .link-text {
@@ -144,7 +141,7 @@ body {
     min-height: 100vh;
 }
 .sidebar.collapsed {
-    width: 60px;
+    width: 75px;
 }
 
 .sidebar.collapsed .link-text,
@@ -363,7 +360,10 @@ float: right;
   color: #777;
   font-size: 0.95rem;
 }
-
+.sidebar-nav {
+    flex-grow: 1;
+    padding: 0.5rem 0;
+}
 .profile-content {
   padding: 2rem;
 }
@@ -671,7 +671,6 @@ input:focus {
 
 #cancelLogoutBtn {
   background-color: #e0e0e0;
-    font-family: "kumbh sans", sans-serif;
   color: #333;
 }
 
