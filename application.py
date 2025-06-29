@@ -268,15 +268,12 @@ def get_notifications():
     notifications = db.execute('''
         SELECT id, message, type, related_id, is_read, created_at
         FROM notifications
-        WHERE user_id = ? AND is_read = 0
+        WHERE user_id = ?
         ORDER BY created_at DESC
     ''', (user_id,)).fetchall()
-
-    db.execute('UPDATE notifications SET is_read = 1 WHERE user_id = ? AND is_read = 0', (user_id,))
-    db.commit()
-
     notif_list = [dict(row) for row in notifications]
     return jsonify(notif_list)
+
 @app.route('/api/notifications/read', methods=['POST'])
 def mark_notifications_read():
     if 'user_id' not in session:
@@ -287,6 +284,7 @@ def mark_notifications_read():
     db.commit()
 
     return jsonify({'success': True})
+
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' not in session:
@@ -578,7 +576,9 @@ def delete_file(file_id):
 
     db.execute('DELETE FROM files WHERE id = ?', (file_id,))
     db.commit()
+    flash("Fichier supprimé avec succès.", "success")
     return redirect(url_for('folders'))
+
 
 def get_or_create_folder(db, user_id, folder_name):
     folder = db.execute("SELECT id FROM folders WHERE user_id = ? AND name = ?", (user_id, folder_name)).fetchone()
