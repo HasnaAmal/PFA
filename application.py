@@ -47,6 +47,8 @@ def scheduled_send_reminders():
 scheduler.add_job(scheduled_send_reminders, 'interval', minutes=5)
 scheduler.start()
 BREVO_API_KEY = os.getenv("BREVO_API_KEY")
+print(f"Clé API chargée : {BREVO_API_KEY is not None}")
+
 SENDER_EMAIL = "akramoufadila@gmail.com"  # تأكدي يكون مفعل فـ Brevo
 SENDER_NAME = "arkivo"
 
@@ -266,15 +268,12 @@ def get_notifications():
     notifications = db.execute('''
         SELECT id, message, type, related_id, is_read, created_at
         FROM notifications
-        WHERE user_id = ? AND is_read = 0
+        WHERE user_id = ?
         ORDER BY created_at DESC
     ''', (user_id,)).fetchall()
-
-    db.execute('UPDATE notifications SET is_read = 1 WHERE user_id = ? AND is_read = 0', (user_id,))
-    db.commit()
-
     notif_list = [dict(row) for row in notifications]
     return jsonify(notif_list)
+
 @app.route('/api/notifications/read', methods=['POST'])
 def mark_notifications_read():
     if 'user_id' not in session:
@@ -285,6 +284,7 @@ def mark_notifications_read():
     db.commit()
 
     return jsonify({'success': True})
+
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' not in session:
@@ -515,30 +515,18 @@ def account():
     notif_count = db.execute('SELECT COUNT(*) FROM notifications WHERE user_id = ?', (user_id,)).fetchone()[0]
 
     return render_template('account.html', notifications=notifications, notif_count=notif_count)
-
 @app.route('/api/folder_files/<int:folder_id>')
-def get_folder_files(folder_id):
-    conn = sqlite3.connect('app.db')
-    cursor = conn.cursor()
-    
-    cursor.execute('''
-        SELECT f.name
-        FROM files f
-        JOIN folders d ON f.folder_id = d.id
-        WHERE d.id = ?
-    ''', (folder_id,))
-    
-    files = [{'name': row[0]} for row in cursor.fetchall()]
-    
-    # Récupérer le nom du dossier pour l'afficher dans la modale
-    cursor.execute('SELECT name FROM folders WHERE id = ?', (folder_id,))
-    folder_name = cursor.fetchone()
-    conn.close()
-    
-    return jsonify({
-        'folder_name': folder_name[0] if folder_name else 'Dossier inconnu',
-        'files': files
-    })
+def folder_files(folder_id):
+    user_id = session.get('user_id')
+    db = get_db()
+    files = db.execute('SELECT id, name FROM files WHERE folder_id = ? AND user_id = ?', (folder_id, user_id)).fetchall()
+
+    files_list = [{'id': f['id'], 'name': f['name']} for f in files]
+
+    folder = db.execute('SELECT name FROM folders WHERE id = ? AND user_id = ?', (folder_id, user_id)).fetchone()
+    folder_name = folder['name'] if folder else "Dossier"
+
+    return jsonify({'folder_name': folder_name, 'files': files_list})
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
@@ -578,7 +566,9 @@ def delete_file(file_id):
 
     db.execute('DELETE FROM files WHERE id = ?', (file_id,))
     db.commit()
+    flash("Fichier supprimé avec succès.", "success")
     return redirect(url_for('folders'))
+
 
 def get_or_create_folder(db, user_id, folder_name):
     folder = db.execute("SELECT id FROM folders WHERE user_id = ? AND name = ?", (user_id, folder_name)).fetchone()
