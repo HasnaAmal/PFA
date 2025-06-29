@@ -896,8 +896,23 @@ def reminders():
         WHERE r.user_id = ?
         ORDER BY r.due_date ASC
     ''', (user_id,)).fetchall()
-    reminders = [dict(r) for r in reminders_rows]
-    files = db.execute('SELECT * FROM files WHERE user_id = ?', (session['user_id'],)).fetchall()
+
+    reminders = []
+    for r in reminders_rows:
+        reminder = dict(r)
+        # Parse due_date string to datetime object
+        try:
+            due_dt = datetime.strptime(reminder['due_date'], '%Y-%m-%d %H:%M:%S')
+            # Remplace le champ due_date par la date formatée (optionnel)
+            reminder['due_date'] = due_dt.strftime('%Y-%m-%d')  
+            # Ajoute un champ due_time au format 'HH:MM'
+            reminder['due_time'] = due_dt.strftime('%H:%M')
+        except Exception:
+            # Si erreur (ex: due_date null ou mauvais format), valeur vide
+            reminder['due_time'] = ''
+        reminders.append(reminder)
+
+    files = db.execute('SELECT * FROM files WHERE user_id = ?', (user_id,)).fetchall()
     notifications = db.execute('''
         SELECT * FROM notifications
         WHERE user_id = ?
