@@ -725,3 +725,7 @@ body {
 #checkMe {
   -webkit-appearance: none;
 }
+
+.Newname{
+  display: none;
+}
