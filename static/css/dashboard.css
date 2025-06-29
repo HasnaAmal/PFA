@@ -39,9 +39,6 @@ body {
     flex-direction: column;
     justify-content: space-between;
     z-index: 1000;
-    border-right: solid 1px var(--sage-light);
-    border-bottom-right-radius: 0px;
-    border-top-right-radius: 0px;
     transition: var(--transition);
 }
 
@@ -107,7 +104,7 @@ body {
     font-size: 1.1rem;
 }
 .sidebar.collapsed .sidebar-nav a.active, .sidebar.collapsed .sidebar-nav a:hover {
-  width: 40px;
+  width: 50px;
 }
 .link-text {
     font-weight: 500;
@@ -276,7 +273,7 @@ body {
     background-color: var(--sage-darker);
 }
 .sidebar.collapsed {
-    width: 60px;
+    width: 75px;
 }
 
 .sidebar.collapsed .link-text,
@@ -312,6 +309,7 @@ body {
 
 .sidebar.collapsed .toggle-btn i {
     transform: rotate(360deg);
+    
 }
 .empty-message {
   width: 1085px;
@@ -574,7 +572,6 @@ body {
     color: #E53935;
 }
 
-/* dark mode styling */
 .drakmodebtn {
     position: relative;
     width: 80px;
@@ -640,4 +637,8 @@ body {
   outline: none;
   border-color: var(--sage-darker);
   box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.3);
+}
+.sidebar.collapsed .drakmodebtn,
+.sidebar.collapsed .language-buttons {
+  display: none;
 }
