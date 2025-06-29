@@ -47,6 +47,8 @@ def scheduled_send_reminders():
 scheduler.add_job(scheduled_send_reminders, 'interval', minutes=5)
 scheduler.start()
 BREVO_API_KEY = os.getenv("BREVO_API_KEY")
+print(f"Clé API chargée : {BREVO_API_KEY is not None}")
+
 SENDER_EMAIL = "akramoufadila@gmail.com"  # تأكدي يكون مفعل فـ Brevo
 SENDER_NAME = "arkivo"
 
