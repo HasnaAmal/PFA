@@ -515,30 +515,18 @@ def account():
     notif_count = db.execute('SELECT COUNT(*) FROM notifications WHERE user_id = ?', (user_id,)).fetchone()[0]
 
     return render_template('account.html', notifications=notifications, notif_count=notif_count)
-
 @app.route('/api/folder_files/<int:folder_id>')
-def get_folder_files(folder_id):
-    conn = sqlite3.connect('app.db')
-    cursor = conn.cursor()
-    
-    cursor.execute('''
-        SELECT f.name
-        FROM files f
-        JOIN folders d ON f.folder_id = d.id
-        WHERE d.id = ?
-    ''', (folder_id,))
-    
-    files = [{'name': row[0]} for row in cursor.fetchall()]
-    
-    # Récupérer le nom du dossier pour l'afficher dans la modale
-    cursor.execute('SELECT name FROM folders WHERE id = ?', (folder_id,))
-    folder_name = cursor.fetchone()
-    conn.close()
-    
-    return jsonify({
-        'folder_name': folder_name[0] if folder_name else 'Dossier inconnu',
-        'files': files
-    })
+def folder_files(folder_id):
+    user_id = session.get('user_id')
+    db = get_db()
+    files = db.execute('SELECT id, name FROM files WHERE folder_id = ? AND user_id = ?', (folder_id, user_id)).fetchall()
+
+    files_list = [{'id': f['id'], 'name': f['name']} for f in files]
+
+    folder = db.execute('SELECT name FROM folders WHERE id = ? AND user_id = ?', (folder_id, user_id)).fetchone()
+    folder_name = folder['name'] if folder else "Dossier"
+
+    return jsonify({'folder_name': folder_name, 'files': files_list})
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
