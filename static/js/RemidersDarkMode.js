@@ -5,12 +5,14 @@ window.onload = () => {
     const isDark = localStorage.getItem("darkMode") === "true";
     checkbtn.checked = isDark;
     RemidersDarkMode(isDark);
+    ColorsChange(isDark);
 };
 
 checkbtn.addEventListener("change", () => {
     const isChecked = checkbtn.checked;
     localStorage.setItem("darkMode", isChecked);
     RemidersDarkMode(isChecked);
+    ColorsChange(isChecked);
 });
 
 function RemidersDarkMode(black) {
