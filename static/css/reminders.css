@@ -893,3 +893,9 @@ body {
   }
 }
 
+/* dark mode btn style*/
+#checkMe {
+  -webkit-appearance: none;
+}
+
+
